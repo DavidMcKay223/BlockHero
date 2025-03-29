@@ -4,12 +4,12 @@ import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../main.js';
 import { checkCollision } from '../utils.js';
 
 const novaAttack = {
-    damage: 20,
+    baseDamage: 20, // Using baseDamage for clarity
     range: 150,
     projectileSpeed: 15,
     projectileColor: 'orange',
     projectileRadius: 10,
-    numProjectiles: 16, // Number of projectiles to spawn
+    numProjectiles: 16, // Base number of projectiles
     duration: 30 // Duration of the projectiles in frames
 };
 
@@ -23,8 +23,12 @@ export function performNovaAttack() {
         isNovaActive = true;
         novaTimer = novaAttack.duration;
         novaProjectiles.length = 0; // Clear any existing projectiles
-        const angleIncrement = (2 * Math.PI) / novaAttack.numProjectiles;
-        for (let i = 0; i < novaAttack.numProjectiles; i++) {
+
+        const extraProjectiles = Math.floor(player.INT / 50);
+        const totalProjectiles = novaAttack.numProjectiles + extraProjectiles;
+        const angleIncrement = (2 * Math.PI) / totalProjectiles;
+
+        for (let i = 0; i < totalProjectiles; i++) {
             const angle = i * angleIncrement;
             const projectile = {
                 x: player.x + player.width / 2,
@@ -55,7 +59,8 @@ export function handleNovaAttack() {
                 const combinedRadius = projectile.radius + Math.max(enemy.width, enemy.height) / 2; // Approximate enemy radius
 
                 if (distance < combinedRadius) {
-                    enemy.health -= novaAttack.damage;
+                    const damage = novaAttack.baseDamage + player.INT; // Damage scales with INT
+                    enemy.health -= damage;
                     if (enemy.health <= 0) {
                         const moneyWorth = enemy.moneyWorth || 25;
                         enemies.splice(j, 1);

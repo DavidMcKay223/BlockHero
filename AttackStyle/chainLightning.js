@@ -4,10 +4,10 @@ import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../main.js'; // Imp
 import { checkCollision } from '../utils.js';
 
 const chainLightningAttack = {
-    damage: 55,
+    baseDamage: 55, // Using baseDamage for clarity
     range: 450,
     bounceRange: 200, // Range for the lightning to bounce to another enemy
-    maxBounces: 3, // Maximum number of enemies the lightning can hit
+    maxBounces: 3, // Base maximum number of enemies the lightning can hit
     lightningColor: 'yellow',
     thickness: 25,
     duration: 15 // Duration of each lightning segment
@@ -28,7 +28,7 @@ export function performChainLightning() {
         isChainLightningActive = true;
         chainLightningTimer = chainLightningAttack.duration;
         currentTargets.push(firstTarget);
-        applyDamage(firstTarget);
+        applyDamage(firstTarget, bounceCount); // Pass bounceCount for damage multiplier
         bounceCount++;
     }
 }
@@ -38,13 +38,16 @@ export function handleChainLightningAttack() {
     if (isChainLightningActive && currentTargets.length > 0) {
         chainLightningTimer--;
 
+        const extraBounces = Math.floor(player.INT / 100);
+        const totalMaxBounces = chainLightningAttack.maxBounces + extraBounces;
+
         if (chainLightningTimer <= 0) {
-            if (bounceCount < chainLightningAttack.maxBounces) {
+            if (bounceCount < totalMaxBounces) {
                 const lastTarget = currentTargets[currentTargets.length - 1];
                 const nextTarget = findClosestEnemy(lastTarget, chainLightningAttack.bounceRange, currentTargets);
                 if (nextTarget) {
                     currentTargets.push(nextTarget);
-                    applyDamage(nextTarget);
+                    applyDamage(nextTarget, bounceCount); // Pass current bounceCount
                     bounceCount++;
                     chainLightningTimer = chainLightningAttack.duration; // Reset timer for the next bounce
                 } else {
@@ -59,9 +62,13 @@ export function handleChainLightningAttack() {
     }
 }
 
-function applyDamage(enemy) {
+function applyDamage(enemy, bounceNumber) {
     if (enemy && enemy.health > 0) {
-        enemy.health -= chainLightningAttack.damage;
+        const intBonusDamage = player.INT;
+        const damageMultiplier = Math.pow(2, bounceNumber); // Damage doubles per jump
+        const totalDamage = (chainLightningAttack.baseDamage + intBonusDamage) * damageMultiplier;
+
+        enemy.health -= totalDamage;
         if (enemy.health <= 0) {
             const index = enemies.indexOf(enemy);
             if (index > -1) {

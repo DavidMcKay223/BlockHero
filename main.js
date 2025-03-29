@@ -46,6 +46,38 @@ const leftClickAttackSelect = document.getElementById('leftClickAttack');
 const rightClickAttackSelect = document.getElementById('rightClickAttack');
 const closeMenuButton = document.getElementById('closeMenuButton');
 
+// Get stat display elements
+const strValueDisplay = document.getElementById('strValue');
+const dexValueDisplay = document.getElementById('dexValue');
+const intValueDisplay = document.getElementById('intValue');
+const moneyValueDisplay = document.getElementById('moneyValue');
+const killsValueDisplay = document.getElementById('killsValue');
+
+// Get stat increase button elements
+const increaseStrButton = document.getElementById('increaseStr');
+const increaseDexButton = document.getElementById('increaseDex');
+const increaseIntButton = document.getElementById('increaseInt');
+const strCostDisplay = document.getElementById('strCost');
+const dexCostDisplay = document.getElementById('dexCost');
+const intCostDisplay = document.getElementById('intCost');
+
+// Stat increase costs
+let strCost = 50;
+let dexCost = 50;
+let intCost = 50;
+
+// Function to update the stat display
+function updateStatDisplay() {
+    strValueDisplay.textContent = player.STR;
+    dexValueDisplay.textContent = player.DEX;
+    intValueDisplay.textContent = player.INT;
+    moneyValueDisplay.textContent = player.money;
+    killsValueDisplay.textContent = player.killCount;
+    strCostDisplay.textContent = `(${strCost} Money)`;
+    dexCostDisplay.textContent = `(${dexCost} Money)`;
+    intCostDisplay.textContent = `(${intCost} Money)`;
+}
+
 let menuOpen = false;
 
 // Function to toggle the menu visibility
@@ -84,13 +116,41 @@ closeMenuButton.addEventListener('click', () => {
     toggleMenu();
 });
 
+increaseStrButton.addEventListener('click', () => {
+    if (player.money >= strCost) {
+        player.money -= strCost;
+        player.STR++;
+        strCost *= 1.20;
+        updateStatDisplay();
+    }
+});
+
+increaseDexButton.addEventListener('click', () => {
+    if (player.money >= dexCost) {
+        player.money -= dexCost;
+        player.DEX++;
+        dexCost *= 1.20;
+        updateStatDisplay();
+    }
+});
+
+increaseIntButton.addEventListener('click', () => {
+    if (player.money >= intCost) {
+        player.money -= intCost;
+        player.INT++;
+        intCost *= 1.20;
+        updateStatDisplay();
+    }
+});
+
 const initialEnemyCount = 5; // You can change this number to spawn more or fewer enemies
 const respawnEnemyCount = 5; // Number of enemies to respawn
 
 function init() {
     //for (let i = 0; i < initialEnemyCount; i++) {
-    //    spawnEnemy();
+    //     spawnEnemy();
     //}
+    updateStatDisplay(); // Initial call to display stats
 }
 
 function gameLoop() {
@@ -105,6 +165,8 @@ function gameLoop() {
             spawnEnemy();
         }
     }
+
+    updateStatDisplay(); // Update stats on each frame
 
     requestAnimationFrame(gameLoop);
 }

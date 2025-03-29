@@ -37,9 +37,4 @@ export function draw(ctx) {
   novaAttack.drawNovaAttack(ctx); // Draw nova attack projectiles
 
   ctx.restore();
-
-  ctx.fillStyle = 'black';
-  ctx.font = '16px Arial';
-  ctx.fillText(`Kills: ${player.killCount}`, 10, 20);
-  ctx.fillText(`Money: $${player.money}`, 10, 40);
 }

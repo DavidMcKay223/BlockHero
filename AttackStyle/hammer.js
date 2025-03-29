@@ -6,7 +6,7 @@ import { checkCollision } from '../utils.js';
 const hammerSize = 10;
 const hammerColor = 'brown';
 const hammerSpeed = 10;
-const hammerDamage = 15;
+const baseHammerDamage = 15; // Using baseHammerDamage for clarity
 
 const hammers = [];
 
@@ -47,7 +47,8 @@ export function updateHammers() {
         for (let j = enemies.length - 1; j >= 0; j--) {
             const enemy = enemies[j];
             if (checkCollision(hammer, enemy)) {
-                enemy.health -= hammerDamage;
+                const damage = baseHammerDamage + player.STR; // Damage scales with STR
+                enemy.health -= damage;
                 hammers.splice(i, 1);
                 if (enemy.health <= 0) {
                     const moneyWorth = enemy.moneyWorth || 25; // Get the enemy's money worth

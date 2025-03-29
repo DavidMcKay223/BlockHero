@@ -8,32 +8,36 @@ import { enemies, spawnEnemy } from './enemy.js';
 import { checkCollision } from './utils.js';
 
 export const player = {
-  x: 50,
-  y: 0,
-  width: 50,
-  height: 50,
-  color: 'blue',
-  speed: 5,
-  isAttacking: false,
-  attackTimer: 0,
-  attackDuration: 20,
-  attackMove: 'punch',
-  canThrowHammer: true,
-  hammerThrowCooldown: 30,
-  hammerThrowTimer: 0,
-  canWhipSlash: true,
-  whipSlashCooldown: 20,
-  whipSlashTimer: 0,
-  canChainLightning: true,
-  chainLightningCooldown: 45,
-  chainLightningTimer: 0,
-  canNovaAttack: true, // New property
-  novaAttackCooldown: 60, // Adjust as needed
-  novaAttackTimer: 0,
-  killCount: 0,
-  money: 0,
-  selectedLeftClickAttack: 'punch',
-  selectedRightClickAttack: 'nova'
+    x: 50,
+    y: 0,
+    width: 50,
+    height: 50,
+    color: 'blue',
+    speed: 5,
+    isAttacking: false,
+    attackTimer: 0,
+    attackDuration: 20,
+    attackMove: 'punch',
+    canThrowHammer: true,
+    hammerThrowCooldown: 30,
+    hammerThrowTimer: 0,
+    canWhipSlash: true,
+    whipSlashCooldown: 20,
+    whipSlashTimer: 0,
+    canChainLightning: true,
+    chainLightningCooldown: 45,
+    chainLightningTimer: 0,
+    canNovaAttack: true, // New property
+    novaAttackCooldown: 60, // Adjust as needed
+    novaAttackTimer: 0,
+    killCount: 0,
+    money: 0,
+    selectedLeftClickAttack: 'punch',
+    selectedRightClickAttack: 'chainLightning',
+    // New stats
+    STR: 10, // Strength
+    DEX: 10, // Dexterity
+    INT: 10  // Intelligence
 };
 
 export const keys = {};
@@ -41,39 +45,39 @@ let mouseClick = false;
 let e;
 
 document.addEventListener('keydown', (event) => {
-  keys[event.key] = true;
+    keys[event.key] = true;
 });
 
 document.addEventListener('keyup', (event) => {
-  keys[event.key] = false;
+    keys[event.key] = false;
 });
 
 export function handlePlayerInput() {
-  let newPlayerX = player.x;
-  let newPlayerY = player.y;
+    let newPlayerX = player.x;
+    let newPlayerY = player.y;
 
-  if (keys['w'] || keys['W'] || keys['ArrowUp']) newPlayerY -= player.speed;
-  if (keys['s'] || keys['S'] || keys['ArrowDown']) newPlayerY += player.speed;
-  if (keys['a'] || keys['A'] || keys['ArrowLeft']) newPlayerX -= player.speed;
-  if (keys['d'] || keys['D'] || keys['ArrowRight']) newPlayerX += player.speed;
+    if (keys['w'] || keys['W'] || keys['ArrowUp']) newPlayerY -= player.speed;
+    if (keys['s'] || keys['S'] || keys['ArrowDown']) newPlayerY += player.speed;
+    if (keys['a'] || keys['A'] || keys['ArrowLeft']) newPlayerX -= player.speed;
+    if (keys['d'] || keys['D'] || keys['ArrowRight']) newPlayerX += player.speed;
 
-  // Horizontal wrapping
-  if (newPlayerX < 0) {
-    player.x = gameWorldWidth - player.width;
-  } else if (newPlayerX > gameWorldWidth - player.width) {
-    player.x = 0;
-  } else {
-    player.x = newPlayerX;
-  }
+    // Horizontal wrapping
+    if (newPlayerX < 0) {
+        player.x = gameWorldWidth - player.width;
+    } else if (newPlayerX > gameWorldWidth - player.width) {
+        player.x = 0;
+    } else {
+        player.x = newPlayerX;
+    }
 
-  // Vertical wrapping
-  if (newPlayerY < 0) {
-    player.y = gameWorldHeight - player.height;
-  } else if (newPlayerY > gameWorldHeight - player.height) {
-    player.y = 0;
-  } else {
-    player.y = newPlayerY;
-  }
+    // Vertical wrapping
+    if (newPlayerY < 0) {
+        player.y = gameWorldHeight - player.height;
+    } else if (newPlayerY > gameWorldHeight - player.height) {
+        player.y = 0;
+    } else {
+        player.y = newPlayerY;
+    }
 }
 
 export function initiateAttack(button) {

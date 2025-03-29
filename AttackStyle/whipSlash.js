@@ -4,7 +4,7 @@ import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../main.js'; // Imp
 import { checkCollision } from '../utils.js';
 
 const whipSlashAttack = {
-    damage: 80,
+    baseDamage: 80, // Using baseDamage for clarity
     range: 140,
     whipColor: 'purple',
     thickness: 8,
@@ -23,7 +23,8 @@ export function performWhipSlash() {
     for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
         if (checkCollision(whipHitbox, enemy)) {
-            enemy.health -= whipSlashAttack.damage;
+            const damage = whipSlashAttack.baseDamage + player.STR + player.DEX; // Damage scales with STR and DEX
+            enemy.health -= damage;
             if (enemy.health <= 0) {
                 const originalMaxHealth = enemy.maxHealth || 100;
                 const splitHealth = originalMaxHealth / 4;
