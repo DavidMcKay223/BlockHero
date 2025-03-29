@@ -1,8 +1,9 @@
 import { update, draw } from './game.js';
-import { player, initiateAttack } from './player.js';
-import { spawnEnemy, enemies, updateEnemies, drawEnemies } from './enemy.js'; // Import the new enemy functions
-import * as items from './items.js'; // Import our items logic
+import { player, handlePlayerInput, updatePlayerCooldowns, initiateAttack } from './player.js';
+import { spawnEnemy, enemies, updateEnemies, drawEnemies } from './enemy.js';
+import * as items from './items.js';
 import RighteousFire from './Talent/righteousFire.js';
+import { updateArcaneExplosions, performArcaneExplosion, initialExplosionRadius } from './Talent/arcaneExplosion.js'; // Import Arcane Explosion functions and radius
 
 export const DEBUG_MODE = false;
 const canvas = document.getElementById('gameCanvas');
@@ -28,9 +29,9 @@ canvas.addEventListener('mousemove', (event) => {
 });
 
 canvas.addEventListener('mousedown', (event) => {
-    if (DEBUG_MODE) console.log('mousedown event - button:', event.button, 'clientX:', event.clientX, 'clientY:', event.clientY);
+    if (DEBUG_MODE) console.log('mousedown event - button:', event.button, 'clientX:', event.button, 'clientX:', event.clientY);
     initiateAttack(event.button);
-    event.preventDefault();
+    event.preventDefault(); // keep this to prevent default browser behavior.  Important for contextmenu
 });
 
 canvas.addEventListener('mouseup', (event) => {
@@ -38,12 +39,13 @@ canvas.addEventListener('mouseup', (event) => {
 });
 
 canvas.addEventListener('contextmenu', (event) => {
-    event.preventDefault();
+    event.preventDefault(); // Prevent the default context menu
+    initiateAttack(2); // Explicitly call initiateAttack with button 2 (right-click)
 });
 
 const attackMenu = document.getElementById('attackMenu');
 const leftClickAttackSelect = document.getElementById('leftClickAttack');
-const rightClickAttackSelect = document.getElementById('rightClickAttack');
+const rightClickAttackSelect = document.getElementById('rightClickAttackSelect');
 const closeMenuButton = document.getElementById('closeMenuButton');
 
 const strValueDisplay = document.getElementById('strValue');
@@ -77,6 +79,11 @@ const closeInventoryButton = document.getElementById('closeInventoryButton');
 let inventoryOpen = false;
 
 function updateStatDisplay() {
+    if (!strValueDisplay || !dexValueDisplay || !intValueDisplay || !moneyValueDisplay || !killsValueDisplay || !levelValueDisplay ||
+        !strCostDisplay || !dexCostDisplay || !intCostDisplay) {
+        if (DEBUG_MODE) console.error("One or more stat display elements are missing from the HTML.");
+        return;
+    }
     let totalSTR = player.STR;
     let totalDEX = player.DEX;
     let totalINT = player.INT;
@@ -105,16 +112,24 @@ let menuOpen = false;
 
 function toggleMenu() {
     menuOpen = !menuOpen;
-    attackMenu.style.display = menuOpen ? 'flex' : 'none';
+    if (attackMenu) {
+        attackMenu.style.display = menuOpen ? 'flex' : 'none';
+    }
     if (menuOpen) {
-        leftClickAttackSelect.value = player.selectedLeftClickAttack;
-        rightClickAttackSelect.value = player.selectedRightClickAttack;
+        if (leftClickAttackSelect) {
+            leftClickAttackSelect.value = player.selectedLeftClickAttack;
+        }
+        if (rightClickAttackSelect) {
+            rightClickAttackSelect.value = player.selectedRightClickAttack;
+        }
     }
 }
 
 function toggleShop() {
     shopOpen = !shopOpen;
-    shopMenu.style.display = shopOpen ? 'flex' : 'none';
+    if (shopMenu) {
+        shopMenu.style.display = shopOpen ? 'flex' : 'none';
+    }
     if (shopOpen) {
         generateAndDisplayShop();
     }
@@ -122,7 +137,9 @@ function toggleShop() {
 
 function toggleInventory() {
     inventoryOpen = !inventoryOpen;
-    inventoryMenu.style.display = inventoryOpen ? 'flex' : 'none';
+    if (inventoryMenu) {
+        inventoryMenu.style.display = inventoryOpen ? 'flex' : 'none';
+    }
     if (inventoryOpen) {
         displayInventory();
         displayEquippedGear();
@@ -134,65 +151,87 @@ document.addEventListener('keydown', (event) => {
         toggleMenu();
     } else if (event.key === 'b' || event.key === 'B') {
         toggleShop();
-    } else if (event.key === 'i' || event.key === 'I') { // Toggle inventory on 'I'
+    } else if (event.key === 'i' || event.key === 'I') {
         toggleInventory();
     } else if (event.key === '1') {
-        if(righteousFireInstance.isActive){
+        if (righteousFireInstance.isActive) {
             righteousFireInstance.deactivate();
-        }else{
+        } else {
             righteousFireInstance.activate();
         }
+    } else if (event.key === '2') {
+        performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, canvas);
     }
 });
 
-leftClickAttackSelect.addEventListener('change', (event) => {
-    player.selectedLeftClickAttack = event.target.value;
-    if (DEBUG_MODE) console.log('Left click attack selected:', player.selectedLeftClickAttack);
-});
+if (leftClickAttackSelect) {
+    leftClickAttackSelect.addEventListener('change', (event) => {
+        player.selectedLeftClickAttack = event.target.value;
+        if (DEBUG_MODE) console.log('Left click attack selected:', player.selectedLeftClickAttack);
+    });
+}
 
-rightClickAttackSelect.addEventListener('change', (event) => {
-    player.selectedRightClickAttack = event.target.value;
-    if (DEBUG_MODE) console.log('Right click attack selected:', player.selectedRightClickAttack);
-});
 
-closeMenuButton.addEventListener('click', () => {
-    toggleMenu();
-});
+if (rightClickAttackSelect) {
+    rightClickAttackSelect.addEventListener('change', (event) => {
+        player.selectedRightClickAttack = event.target.value;
+        if (DEBUG_MODE) console.log('Right click attack selected:', player.selectedRightClickAttack);
+    });
+}
 
-increaseStrButton.addEventListener('click', () => {
-    if (player.money >= strCost) {
-        player.money -= strCost;
-        player.STR+=5;
-        strCost *= 1.20;
-        updateStatDisplay();
-    }
-});
+if (closeMenuButton) {
+    closeMenuButton.addEventListener('click', () => {
+        toggleMenu();
+    });
+}
 
-increaseDexButton.addEventListener('click', () => {
-    if (player.money >= dexCost) {
-        player.money -= dexCost;
-        player.DEX+=5;
-        dexCost *= 1.20;
-        updateStatDisplay();
-    }
-});
 
-increaseIntButton.addEventListener('click', () => {
-    if (player.money >= intCost) {
-        player.money -= intCost;
-        player.INT+=5;
-        intCost *= 1.20;
-        updateStatDisplay();
-    }
-});
+if (increaseStrButton) {
+    increaseStrButton.addEventListener('click', () => {
+        if (player.money >= strCost) {
+            player.money -= strCost;
+            player.STR += 5;
+            strCost *= 1.20;
+            updateStatDisplay();
+        }
+    });
+}
 
-closeShopButton.addEventListener('click', () => {
-    toggleShop();
-});
+if (increaseDexButton) {
+    increaseDexButton.addEventListener('click', () => {
+        if (player.money >= dexCost) {
+            player.money -= dexCost;
+            player.DEX += 5;
+            dexCost *= 1.20;
+            updateStatDisplay();
+        }
+    });
+}
 
-closeInventoryButton.addEventListener('click', () => {
-    toggleInventory();
-});
+if (increaseIntButton) {
+    increaseIntButton.addEventListener('click', () => {
+        if (player.money >= intCost) {
+            player.money -= intCost;
+            player.INT += 5;
+            intCost *= 1.20;
+            updateStatDisplay();
+        }
+    });
+}
+
+if (closeShopButton) {
+    closeShopButton.addEventListener('click', () => {
+        toggleShop();
+    });
+}
+
+
+if (closeInventoryButton) {
+    closeInventoryButton.addEventListener('click', () => {
+        toggleInventory();
+    });
+}
+
 
 const initialEnemyCount = 5;
 const respawnEnemyCount = 5;
@@ -202,11 +241,18 @@ function init() {
     currentShopInventory = items.generateShopInventory(5, player.playerLevel);
 }
 
-function gameLoop() {
+async function gameLoop() {
     update();
-    updateEnemies(); // Call the enemy update function
+    updateEnemies();
+
+    if (player.arcaneExplosionOrbs && player.arcaneExplosionOrbs.length > 0) {
+        const arcaneExplosionModule = await import('./Talent/arcaneExplosion.js');
+        await arcaneExplosionModule.updateArcaneExplosions(player.arcaneExplosionOrbs);
+    }
+
     draw(ctx);
-    drawEnemies(ctx); // Call the enemy draw function
+    drawEnemies(ctx);
+
 
     if (player.killCount >= player.killsForNextLevel) {
         player.playerLevel++;
@@ -222,19 +268,18 @@ function gameLoop() {
     if (enemies.length === 0) {
         if (DEBUG_MODE) console.log('No enemies left, spawning more...');
         for (let i = 0; i < respawnEnemyCount * player.playerLevel; i++) {
-            // Example of level-based enemy spawning (you can adjust the conditions and types)
             if (player.playerLevel > 2 && Math.random() < 0.4) {
-                spawnEnemy({ health: 120, speed: 1.8, movementPattern: 'chase' }); // Spawn a faster enemy
+                spawnEnemy({ health: 120, speed: 1.8, movementPattern: 'chase' });
             } else if (player.playerLevel > 4 && Math.random() < 0.25) {
-                spawnEnemy({ health: 180, sizeRatio: 1.1, moneyWorth: 60 }); // Spawn a tankier enemy
+                spawnEnemy({ health: 180, sizeRatio: 1.1, moneyWorth: 60 });
             } else {
-                spawnEnemy(); // Spawn a basic enemy
+                spawnEnemy();
             }
         }
     }
 
     updateStatDisplay();
-
+    updatePlayerCooldowns();
     requestAnimationFrame(gameLoop);
 }
 
@@ -279,7 +324,7 @@ function buyItem(itemIndex) {
         console.log(`Bought ${itemToBuy.name}. Inventory:`, player.inventory);
         updateStatDisplay();
         if (shopOpen) {
-            generateAndDisplayShop(); // Refresh the shop UI
+            generateAndDisplayShop();
         }
     } else {
         console.log("Not enough money!");
@@ -340,31 +385,6 @@ function displayEquippedGear() {
         itemDiv.appendChild(detailsDiv);
         equippedItemsDisplay.appendChild(itemDiv);
     }
-}
-
-function equipItem(inventoryIndex) {
-    const itemToEquip = player.inventory[inventoryIndex];
-    const slot = itemToEquip.type;
-
-    if (player.equipped[slot]) {
-        // If there's already an item in that slot, move it back to inventory
-        player.inventory.push(player.equipped[slot]);
-    }
-
-    player.equipped[slot] = itemToEquip;
-    player.inventory.splice(inventoryIndex, 1); // Remove the equipped item from inventory
-    displayInventory();
-    displayEquippedGear();
-    updateStatDisplay();
-}
-
-function unequipItem(slot) {
-    const unequippedItem = player.equipped[slot];
-    player.equipped[slot] = null;
-    player.inventory.push(unequippedItem);
-    displayInventory();
-    displayEquippedGear();
-    updateStatDisplay();
 }
 
 export const righteousFireInstance = new RighteousFire(player);
