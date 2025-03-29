@@ -1,4 +1,4 @@
-import { gameWorldWidth, gameWorldHeight } from './main.js';
+import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
 import { checkCollision } from './utils.js';
 import { player } from './player.js'; // Import player to make enemies move towards it
 
@@ -10,7 +10,7 @@ const enemyTypes = [
     {
         name: 'Basic Block',
         color: 'red',
-        baseHealth: 100,
+        baseHealth: 1000,
         speed: 1,
         movementPattern: 'random', // 'random', 'chase'
         sizeRatio: 1,
@@ -20,7 +20,7 @@ const enemyTypes = [
     {
         name: 'Fast Block',
         color: 'orange',
-        baseHealth: 75,
+        baseHealth: 750,
         speed: 2,
         movementPattern: 'chase',
         sizeRatio: 0.8,
@@ -30,7 +30,7 @@ const enemyTypes = [
     {
         name: 'Tank Block',
         color: 'brown',
-        baseHealth: 150,
+        baseHealth: 1500,
         speed: 0.5,
         movementPattern: 'random',
         sizeRatio: 1.2,
@@ -40,7 +40,7 @@ const enemyTypes = [
     {
         name: 'Green Goo',
         color: 'green',
-        baseHealth: 90,
+        baseHealth: 900,
         speed: 1.5,
         movementPattern: 'chase',
         sizeRatio: 1,
@@ -58,7 +58,16 @@ export function spawnEnemy(options) {
     // Determine which enemy type to spawn (can be based on player level later)
     const randomEnemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
 
-    const health = options?.health !== undefined ? options.health : randomEnemyType.baseHealth;
+    let health;
+    if (player.playerLevel < 5) {
+        health = options?.health !== undefined ? options.health : Math.round(randomEnemyType.baseHealth * Math.pow(2.5, player.playerLevel)); // Increased scaling for early levels
+    }
+    else if (player.playerLevel >= 5 && player.playerLevel < 10){
+        health = options?.health !== undefined ? options.health : Math.round(randomEnemyType.baseHealth * Math.pow(5.5, player.playerLevel)); // increased scaling
+    }
+    else {
+        health = options?.health !== undefined ? options.health : Math.round(randomEnemyType.baseHealth * Math.pow(10.5, player.playerLevel)); // Further increased scaling for later levels
+    }
     const sizeRatio = options?.sizeRatio !== undefined ? options.sizeRatio : randomEnemyType.sizeRatio;
     const moneyWorth = options?.moneyWorth !== undefined ? options.moneyWorth : randomEnemyType.moneyWorth;
     const speed = options?.speed !== undefined ? options.speed : randomEnemyType.speed;
@@ -98,6 +107,9 @@ export function spawnEnemy(options) {
     } while (collision);
 
     enemies.push(newEnemy);
+    if (DEBUG_MODE) {
+        console.log("Spawned enemy:", newEnemy); // Add this line
+    }
 }
 
 export function updateEnemies() {
@@ -124,7 +136,7 @@ export function updateEnemies() {
             enemy.x += Math.cos(angle) * enemy.speed;
             enemy.y += Math.sin(angle) * enemy.speed;
         }
-        
+
         // Change color based on health
         const healthPercentage = enemy.health / enemy.maxHealth;
         if (healthPercentage > 0.7) {
