@@ -8,7 +8,7 @@ import { toggleInventory } from '../components/inventory.js';
 import { toggleShop } from '../components/shop.js';
 import { updateStatDisplay } from '../components/stats.js';
 import { activateStatBoost, updateStatBoost } from '../talents/statBoost.js';
-
+import { activateKillAllSplit, updateKillAllSplitCooldown } from '../talents/killAllSplit.js';
 
 export const DEBUG_MODE = false;
 const canvas = document.getElementById('gameCanvas');
@@ -65,6 +65,8 @@ document.addEventListener('keydown', (event) => {
         performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, canvas);
     } else if (event.key === '3') {
         activateStatBoost();
+    } else if (event.key === '4') {
+        activateKillAllSplit();
     }
 });
 
@@ -110,6 +112,7 @@ async function gameLoop() {
     updateStatDisplay();
     updatePlayerCooldowns();
     updateStatBoost();
+    updateKillAllSplitCooldown();
     requestAnimationFrame(gameLoop);
 }
 
