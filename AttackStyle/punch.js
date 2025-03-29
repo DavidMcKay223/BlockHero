@@ -23,6 +23,8 @@ export function handlePunchAttack() {
           if (currentEnemy.health <= 0) {
             enemies.splice(i, 1);
             spawnEnemy();
+            player.killCount++; // Increment kill count
+            player.money += 25; // Add some money (you can adjust this amount)
           }
         }
       }

@@ -6,8 +6,8 @@ export const DEBUG_MODE = false; // Export DEBUG_MODE
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-export const gameWorldWidth = 2000;
-export const gameWorldHeight = 2000;
+export const gameWorldWidth = 1200;
+export const gameWorldHeight = 700;
 
 export { canvas, ctx };
 

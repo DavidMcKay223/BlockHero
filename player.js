@@ -26,8 +26,10 @@ export const player = {
   canChainLightning: true, // New property for chain lightning cooldown
   chainLightningCooldown: 45, // Cooldown duration in frames
   chainLightningTimer: 0,
-  selectedLeftClickAttack: 'whipSlash', // Default left click to whipSlash
-  selectedRightClickAttack: 'chainLightning' // Default right click to chainLightning
+  selectedLeftClickAttack: 'punch', // Default left click to whipSlash
+  selectedRightClickAttack: 'chainLightning', // Default right click to chainLightning
+  killCount: 0,
+  money: 0
 };
 
 export const keys = {}; // Export keys as const
@@ -43,22 +45,32 @@ document.addEventListener('keyup', (event) => {
 });
 
 export function handlePlayerInput() {
-  let newPlayerX = player.x;
-  let newPlayerY = player.y;
-
-  if (keys['w'] || keys['W'] || keys['ArrowUp']) newPlayerY -= player.speed;
-  if (keys['s'] || keys['S'] || keys['ArrowDown']) newPlayerY += player.speed;
-  if (keys['a'] || keys['A'] || keys['ArrowLeft']) newPlayerX -= player.speed;
-  if (keys['d'] || keys['D'] || keys['ArrowRight']) newPlayerX += player.speed;
-
-  if (newPlayerX < 0) newPlayerX = 0;
-  if (newPlayerX > gameWorldWidth - player.width) newPlayerX = 0;
-  if (newPlayerY < 0) newPlayerY = 0;
-  if (newPlayerY > gameWorldHeight - player.height) newPlayerY = gameWorldHeight - player.height;
-
-  player.x = newPlayerX;
-  player.y = newPlayerY;
-}
+    let newPlayerX = player.x;
+    let newPlayerY = player.y;
+  
+    if (keys['w'] || keys['W'] || keys['ArrowUp']) newPlayerY -= player.speed;
+    if (keys['s'] || keys['S'] || keys['ArrowDown']) newPlayerY += player.speed;
+    if (keys['a'] || keys['A'] || keys['ArrowLeft']) newPlayerX -= player.speed;
+    if (keys['d'] || keys['D'] || keys['ArrowRight']) newPlayerX += player.speed;
+  
+    // Horizontal wrapping
+    if (newPlayerX < 0) {
+      player.x = gameWorldWidth - player.width;
+    } else if (newPlayerX > gameWorldWidth - player.width) {
+      player.x = 0;
+    } else {
+      player.x = newPlayerX;
+    }
+  
+    // Vertical wrapping
+    if (newPlayerY < 0) {
+      player.y = gameWorldHeight - player.height;
+    } else if (newPlayerY > gameWorldHeight - player.height) {
+      player.y = 0;
+    } else {
+      player.y = newPlayerY;
+    }
+  }
 
 export function initiateAttack(button) {
     if (DEBUG_MODE) console.log('initiateAttack function called - button:', button, 'player.isAttacking:', player.isAttacking, 'player.canThrowHammer:', player.canThrowHammer, 'player.canWhipSlash:', player.canWhipSlash, 'player.canChainLightning:', player.canChainLightning);

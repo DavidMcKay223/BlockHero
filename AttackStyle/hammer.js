@@ -6,7 +6,7 @@ import { checkCollision } from '../utils.js';
 const hammerSize = 10;
 const hammerColor = 'brown';
 const hammerSpeed = 10;
-const hammerDamage = 5;
+const hammerDamage = 15;
 
 const hammers = [];
 
@@ -52,6 +52,8 @@ export function updateHammers() {
         if (enemy.health <= 0) {
           enemies.splice(j, 1);
           spawnEnemy();
+          player.killCount++; // Increment kill count
+          player.money += 50; // Add some money (you can adjust this amount)
         }
         break;
       }

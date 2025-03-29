@@ -17,21 +17,27 @@ export function update() {
 }
 
 export function draw(ctx) {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-  ctx.save();
-  ctx.translate(-camera.x, -camera.y);
-
-  ctx.fillStyle = 'lightgray';
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
-
-  enemy.drawEnemies(ctx);
-  hammer.drawHammers(ctx);
-  chainLightning.drawChainLightning(ctx);
-  whipSlash.drawWhipSlash(ctx);
-
-  ctx.restore();
-}
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  
+    ctx.save();
+    ctx.translate(-camera.x, -camera.y);
+  
+    ctx.fillStyle = 'lightgray';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x, player.y, player.width, player.height);
+  
+    enemy.drawEnemies(ctx);
+    hammer.drawHammers(ctx);
+    chainLightning.drawChainLightning(ctx);
+    whipSlash.drawWhipSlash(ctx);
+  
+    ctx.restore();
+  
+    // Add this part to display the kill count and money
+    ctx.fillStyle = 'black'; // Set the color of the text
+    ctx.font = '16px Arial'; // Set the font size and style
+    ctx.fillText(`Kills: ${player.killCount}`, 10, 20); // Display kill count at top-left
+    ctx.fillText(`Money: $${player.money}`, 10, 40);   // Display money below kill count
+  }

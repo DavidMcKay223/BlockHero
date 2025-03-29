@@ -4,8 +4,8 @@ import { canvas, gameWorldWidth, gameWorldHeight } from './main.js';
 export const camera = {
   x: 0,
   y: 0,
-  width: 2000,
-  height: 2000
+  width: 1200,
+  height: 700
 };
 
 export function updateCamera() {

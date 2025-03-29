@@ -67,6 +67,8 @@ function applyDamage(enemy) {
             if (index > -1) {
                 enemies.splice(index, 1);
                 spawnEnemy();
+                player.killCount++; // Increment kill count
+                player.money += 25; // Add some money (you can adjust this amount)
             }
         }
     }
