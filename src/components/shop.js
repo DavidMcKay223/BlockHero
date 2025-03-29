@@ -1,25 +1,27 @@
+import { player } from '../core/player.js';
+import * as items from './items.js';
+import { updateStatDisplay } from './stats.js';
+
+export const shopMenu = document.getElementById('shopMenu');
+export const shopInventoryDisplay = document.getElementById('shopInventoryDisplay');
+export const closeShopButton = document.getElementById('closeShopButton');
+let shopOpen = false;
 export let currentShopInventory = [];
 
-export function generateShopInventory(itemCount, playerLevel) {
-    const items = []; // This should be populated with actual item data
-    for (let i = 0; i < itemCount; i++) {
-        const item = {
-            name: `Item ${i + 1}`,
-            type: 'Common',
-            cost: Math.floor(Math.random() * 100) + 1,
-            stats: {
-                STR: Math.floor(Math.random() * 10),
-                DEX: Math.floor(Math.random() * 10),
-                INT: Math.floor(Math.random() * 10),
-            },
-        };
-        items.push(item);
+export function toggleShop() {
+    shopOpen = !shopOpen;
+    if (shopMenu) {
+        shopMenu.style.display = shopOpen ? 'flex' : 'none';
     }
-    return items;
+    if (shopOpen) {
+        generateAndDisplayShop();
+    }
 }
 
-export function displayShopInventory(shopInventoryDisplay) {
+function generateAndDisplayShop() {
     shopInventoryDisplay.innerHTML = '';
+    currentShopInventory = items.generateShopInventory(5, player.playerLevel);
+
     currentShopInventory.forEach((item, index) => {
         const itemDiv = document.createElement('div');
         itemDiv.classList.add('shop-item');
@@ -28,9 +30,20 @@ export function displayShopInventory(shopInventoryDisplay) {
         detailsDiv.classList.add('shop-item-details');
         detailsDiv.innerHTML = `<strong>${item.name}</strong> (${item.type})<br>Cost: $${item.cost}`;
 
+        const statsDiv = document.createElement('div');
+        statsDiv.classList.add('shop-item-stats');
+        let statsText = '';
+        for (const stat in item.stats) {
+            statsText += `${stat}: +${item.stats[stat]} `;
+        }
+        statsDiv.textContent = statsText;
+        detailsDiv.appendChild(statsDiv);
+
         const buyButton = document.createElement('button');
         buyButton.textContent = 'Buy';
-        buyButton.onclick = () => buyItem(index);
+        buyButton.addEventListener('click', () => {
+            buyItem(index);
+        });
 
         itemDiv.appendChild(detailsDiv);
         itemDiv.appendChild(buyButton);
@@ -38,13 +51,23 @@ export function displayShopInventory(shopInventoryDisplay) {
     });
 }
 
-export function buyItem(itemIndex) {
+function buyItem(itemIndex) {
     const itemToBuy = currentShopInventory[itemIndex];
     if (player.money >= itemToBuy.cost) {
         player.money -= itemToBuy.cost;
-        // Add logic to add the item to the player's inventory
-        console.log(`Bought ${itemToBuy.name} for $${itemToBuy.cost}`);
+        player.inventory.push(itemToBuy);
+        console.log(`Bought ${itemToBuy.name}. Inventory:`, player.inventory);
+        updateStatDisplay();
+        if (shopOpen) {
+            generateAndDisplayShop();
+        }
     } else {
-        console.log('Not enough money to buy this item.');
+        console.log("Not enough money!");
     }
+}
+
+if (closeShopButton) {
+    closeShopButton.addEventListener('click', () => {
+        toggleShop();
+    });
 }

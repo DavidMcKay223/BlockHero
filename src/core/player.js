@@ -61,7 +61,7 @@ let e;
 document.addEventListener('keydown', (event) => {
     keys[event.key] = true;
     if (event.key === '2' && player.selectedNumber2Talent === 'arcaneExplosion' && player.canArcaneExplosion) {
-        import('./talents/arcaneExplosion.js').then(module => {
+        import('../talents/arcaneExplosion.js').then(module => {
             module.performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2); // Pass player position
             player.canArcaneExplosion = false;
             player.arcaneExplosionTimer = player.arcaneExplosionCooldown;
