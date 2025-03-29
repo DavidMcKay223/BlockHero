@@ -7,6 +7,8 @@ import { toggleMenu } from '../components/menu.js';
 import { toggleInventory } from '../components/inventory.js';
 import { toggleShop } from '../components/shop.js';
 import { updateStatDisplay } from '../components/stats.js';
+import { activateStatBoost, updateStatBoost } from '../talents/statBoost.js';
+
 
 export const DEBUG_MODE = false;
 const canvas = document.getElementById('gameCanvas');
@@ -61,6 +63,8 @@ document.addEventListener('keydown', (event) => {
         }
     } else if (event.key === '2') {
         performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, canvas);
+    } else if (event.key === '3') {
+        activateStatBoost();
     }
 });
 
@@ -69,7 +73,6 @@ const respawnEnemyCount = 5;
 
 function init() {
     updateStatDisplay();
-    // Shop inventory is managed within shopComponent
 }
 
 async function gameLoop() {
@@ -106,6 +109,7 @@ async function gameLoop() {
 
     updateStatDisplay();
     updatePlayerCooldowns();
+    updateStatBoost();
     requestAnimationFrame(gameLoop);
 }
 

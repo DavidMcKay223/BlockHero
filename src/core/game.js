@@ -8,59 +8,80 @@ import * as enemy from './enemy.js';
 import * as novaAttack from '../attacks/nova.js';
 import { righteousFireInstance, DEBUG_MODE } from './main.js';
 import { drawArcaneExplosions } from '../talents/arcaneExplosion.js';
+import { isStatBoostActive } from '../talents/statBoost.js';
 
 export function update() {
-  handlePlayerInput();
-  updatePlayerCooldowns();
-  punch.handlePunchAttack();
-  chainLightning.handleChainLightningAttack();
-  whipSlash.handleWhipSlashAttack();
-  novaAttack.handleNovaAttack(); // Update nova attack projectiles
-  updateCamera();
-  hammer.updateHammers();
+    handlePlayerInput();
+    updatePlayerCooldowns();
+    punch.handlePunchAttack();
+    chainLightning.handleChainLightningAttack();
+    whipSlash.handleWhipSlashAttack();
+    novaAttack.handleNovaAttack(); // Update nova attack projectiles
+    updateCamera();
+    hammer.updateHammers();
 }
 
 export function draw(ctx) {
-  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  ctx.save();
-  ctx.translate(-camera.x, -camera.y);
+    ctx.save();
+    ctx.translate(-camera.x, -camera.y);
 
-  ctx.fillStyle = 'lightgray';
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = 'lightgray';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
+    // Draw the player
+    if (isStatBoostActive) {
+        // Draw the player with a glowing gold effect
+        ctx.save(); // Save current context for the glow
 
-  // Draw the Righteous Fire radius
-  if (righteousFireInstance.isActive) {
-    ctx.save(); // Save the current context state
+        // Base player color (you can adjust this if you want a different base during boost)
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
 
-    const radius = 100;
-    ctx.beginPath();
-    ctx.arc(player.x + player.width / 2, player.y + player.height / 2, radius, 0, Math.PI * 2);
+        // Add glowing gold outline
+        ctx.strokeStyle = 'gold';
+        ctx.lineWidth = 5;
+        ctx.shadowColor = 'gold';
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(player.x - 2, player.y - 2, player.width + 4, player.height + 4); // Slightly larger to show glow
 
-    // Fill the circle with a lighter color
-    ctx.fillStyle = 'rgba(255, 215, 0, 0.2)'; // Lighter, semi-transparent gold
-    ctx.fill();
+        ctx.restore(); // Restore context to remove glow for other elements
+    } else {
+        // Draw the player normally
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
 
-    // Style the circle outline
-    ctx.strokeStyle = 'rgba(255, 165, 0, 0.7)'; // Semi-transparent orange
-    ctx.lineWidth = 4;
-    ctx.stroke();
+    // Draw the Righteous Fire radius
+    if (righteousFireInstance.isActive) {
+        ctx.save(); // Save the current context state
 
-    // Add glowing effect (applied only to the circle now because of save/restore)
-    ctx.shadowColor = 'orange';
-    ctx.shadowBlur = 10;
+        const radius = 100;
+        ctx.beginPath();
+        ctx.arc(player.x + player.width / 2, player.y + player.height / 2, radius, 0, Math.PI * 2);
 
-    ctx.restore(); // Restore the context state, removing the global glow
-  }
+        // Fill the circle with a lighter color
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.2)'; // Lighter, semi-transparent gold
+        ctx.fill();
 
-  enemy.drawEnemies(ctx);
-  hammer.drawHammers(ctx);
-  chainLightning.drawChainLightning(ctx);
-  whipSlash.drawWhipSlash(ctx);
-  novaAttack.drawNovaAttack(ctx);
-  drawArcaneExplosions(ctx); // Call drawArcaneExplosions
-  ctx.restore(); // Restore the camera translation
+        // Style the circle outline
+        ctx.strokeStyle = 'rgba(255, 165, 0, 0.7)'; // Semi-transparent orange
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Add glowing effect (applied only to the circle now because of save/restore)
+        ctx.shadowColor = 'orange';
+        ctx.shadowBlur = 10;
+
+        ctx.restore(); // Restore the context state, removing the global glow
+    }
+
+    enemy.drawEnemies(ctx);
+    hammer.drawHammers(ctx);
+    chainLightning.drawChainLightning(ctx);
+    whipSlash.drawWhipSlash(ctx);
+    novaAttack.drawNovaAttack(ctx);
+    drawArcaneExplosions(ctx); // Call drawArcaneExplosions
+    ctx.restore(); // Restore the camera translation
 }

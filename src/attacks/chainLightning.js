@@ -72,7 +72,21 @@ function applyDamageToTarget(enemy, bounceNumber, beamIndex) {
     if (enemy && enemy.health > 0) {
         const intBonusDamage = player.INT;
         const damageMultiplier = Math.pow(2, bounceNumber); // Damage doubles per jump
-        const totalDamage = (chainLightningAttack.baseDamage + intBonusDamage) * damageMultiplier;
+        let totalDamage = (chainLightningAttack.baseDamage + intBonusDamage) * damageMultiplier;
+        let damageRollMultiplier = 1;
+
+        // Determine the multiplier range based on player's INT
+        if (player.INT >= 1000) {
+            damageRollMultiplier = Math.floor(Math.random() * 10) + 1; // 1 to 10
+        } else if (player.INT >= 500) {
+            damageRollMultiplier = Math.floor(Math.random() * 7) + 1; // 1 to 7
+        } else if (player.INT >= 100) {
+            damageRollMultiplier = Math.floor(Math.random() * 3) + 1; // 1 to 3
+        } else {
+            // For INT less than 100, no extra multiplier (stays at 1)
+        }
+
+        totalDamage *= damageRollMultiplier;
 
         enemy.health -= totalDamage;
         if (enemy.health <= 0) {
@@ -82,6 +96,12 @@ function applyDamageToTarget(enemy, bounceNumber, beamIndex) {
                 player.killCount++;
                 player.money += enemy.moneyWorth || 25;
             }
+        }
+
+        if (DEBUG_MODE && damageRollMultiplier > 1) {
+            console.log(`Chain Lightning (Beam ${beamIndex + 1}, Bounce ${bounceNumber + 1}) hit enemy with damage: ${totalDamage} (Base: ${chainLightningAttack.baseDamage + intBonusDamage}, Multiplier: ${damageMultiplier}, INT Bonus Roll: ${damageRollMultiplier}x)`);
+        } else if (DEBUG_MODE) {
+            console.log(`Chain Lightning (Beam ${beamIndex + 1}, Bounce ${bounceNumber + 1}) hit enemy with damage: ${totalDamage} (Base: ${chainLightningAttack.baseDamage + intBonusDamage}, Multiplier: ${damageMultiplier})`);
         }
     }
 }
