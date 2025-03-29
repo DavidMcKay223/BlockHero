@@ -1,5 +1,5 @@
 import { update, draw } from './game.js';
-import { player, initiateAttack } from './player.js'; // Removed keys, mouseClick, e import
+import { player, initiateAttack } from './player.js';
 import { spawnEnemy } from './enemy.js';
 
 export const DEBUG_MODE = false; // Export DEBUG_MODE
@@ -39,6 +39,49 @@ canvas.addEventListener('mouseup', (event) => {
 
 canvas.addEventListener('contextmenu', (event) => {
   event.preventDefault();
+});
+
+const attackMenu = document.getElementById('attackMenu');
+const leftClickAttackSelect = document.getElementById('leftClickAttack');
+const rightClickAttackSelect = document.getElementById('rightClickAttack');
+const closeMenuButton = document.getElementById('closeMenuButton');
+
+let menuOpen = false;
+
+// Function to toggle the menu visibility
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  attackMenu.style.display = menuOpen ? 'flex' : 'none';
+
+  // When opening the menu, set the dropdowns to the current player selections
+  if (menuOpen) {
+    leftClickAttackSelect.value = player.selectedLeftClickAttack;
+    rightClickAttackSelect.value = player.selectedRightClickAttack;
+  }
+}
+
+// Event listener to toggle the menu (e.g., on 'M' key press)
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'm' || event.key === 'M') {
+    toggleMenu();
+  }
+});
+
+// Event listener for left click attack selection
+leftClickAttackSelect.addEventListener('change', (event) => {
+  player.selectedLeftClickAttack = event.target.value;
+  if (DEBUG_MODE) console.log('Left click attack selected:', player.selectedLeftClickAttack);
+});
+
+// Event listener for right click attack selection
+rightClickAttackSelect.addEventListener('change', (event) => {
+  player.selectedRightClickAttack = event.target.value;
+  if (DEBUG_MODE) console.log('Right click attack selected:', player.selectedRightClickAttack);
+});
+
+// Event listener for the close button
+closeMenuButton.addEventListener('click', () => {
+  toggleMenu();
 });
 
 const initialEnemyCount = 5; // You can change this number to spawn more or fewer enemies

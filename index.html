@@ -1,22 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Block Battle</title>
-<style>
-  body {
-    margin: 0;
-    display: flex; /* Enable flexbox for the body */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
-    min-height: 100vh; /* Ensure the body takes up at least the full viewport height */
-  }
-  canvas {
-    display: block; /* Keep display block */
-  }
-</style>
+  <title>Block Battle</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex; /* Enable flexbox for the body */
+      justify-content: center; /* Center content horizontally */
+      align-items: center; /* Center content vertically */
+      min-height: 100vh; /* Ensure the body takes up at least the full viewport height */
+    }
+    canvas {
+      display: block; /* Keep display block */
+    }
+  </style>
 </head>
 <body>
   <canvas id="gameCanvas"></canvas>
+
+  <div id="attackMenu" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0, 0, 0, 0.8); color: white; padding: 20px; border-radius: 5px; display: none; flex-direction: column; align-items: center;">
+    <h2>Select Attack Styles</h2>
+
+    <div style="margin-bottom: 10px;">
+      <label for="leftClickAttack">Left Click Attack:</label>
+      <select id="leftClickAttack">
+        <option value="punch">Punch</option>
+		<option value="whipSlash">Whip Slash</option>
+        </select>
+    </div>
+
+    <div>
+      <label for="rightClickAttack">Right Click Attack:</label>
+      <select id="rightClickAttack">
+        <option value="hammer">Hammer</option>
+        <option value="chainLightning">Chain Lightning</option>
+        </select>
+    </div>
+
+	<button id="closeMenuButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close Menu</button>
+  </div>
+
   <script type="module" src="main.js"></script>
 </body>
 </html>

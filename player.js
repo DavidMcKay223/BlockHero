@@ -1,6 +1,8 @@
 import { canvas, gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js'; // Import DEBUG_MODE
 import * as punch from './AttackStyle/punch.js';
 import * as hammer from './AttackStyle/hammer.js';
+import * as chainLightning from './AttackStyle/chainLightning.js'; // Import chainLightning
+import * as whipSlash from './AttackStyle/whipSlash.js'; // Import whipSlash
 import { enemies, spawnEnemy } from './enemy.js';
 import { checkCollision } from './utils.js';
 
@@ -18,8 +20,14 @@ export const player = {
   canThrowHammer: true,
   hammerThrowCooldown: 30,
   hammerThrowTimer: 0,
-  selectedLeftClickAttack: 'punch',
-  selectedRightClickAttack: 'hammer'
+  canWhipSlash: true, // New property for whip slash cooldown
+  whipSlashCooldown: 20, // Cooldown duration in frames
+  whipSlashTimer: 0,
+  canChainLightning: true, // New property for chain lightning cooldown
+  chainLightningCooldown: 45, // Cooldown duration in frames
+  chainLightningTimer: 0,
+  selectedLeftClickAttack: 'whipSlash', // Default left click to whipSlash
+  selectedRightClickAttack: 'chainLightning' // Default right click to chainLightning
 };
 
 export const keys = {}; // Export keys as const
@@ -44,7 +52,7 @@ export function handlePlayerInput() {
   if (keys['d'] || keys['D'] || keys['ArrowRight']) newPlayerX += player.speed;
 
   if (newPlayerX < 0) newPlayerX = 0;
-  if (newPlayerX > gameWorldWidth - player.width) newPlayerX = gameWorldWidth - player.width;
+  if (newPlayerX > gameWorldWidth - player.width) newPlayerX = 0;
   if (newPlayerY < 0) newPlayerY = 0;
   if (newPlayerY > gameWorldHeight - player.height) newPlayerY = gameWorldHeight - player.height;
 
@@ -53,23 +61,60 @@ export function handlePlayerInput() {
 }
 
 export function initiateAttack(button) {
-  if (DEBUG_MODE) console.log('initiateAttack function called - button:', button, 'player.isAttacking:', player.isAttacking, 'player.canThrowHammer:', player.canThrowHammer);
-  if (button === 0 && !player.isAttacking) { // Left click
-    if (player.selectedLeftClickAttack === 'punch') {
-      player.isAttacking = true;
-      player.attackTimer = player.attackDuration;
-      if (DEBUG_MODE) console.log('Left click attack initiated - player.isAttacking:', player.isAttacking);
+    if (DEBUG_MODE) console.log('initiateAttack function called - button:', button, 'player.isAttacking:', player.isAttacking, 'player.canThrowHammer:', player.canThrowHammer, 'player.canWhipSlash:', player.canWhipSlash, 'player.canChainLightning:', player.canChainLightning);
+    if (button === 0 && !player.isAttacking) { // Left click
+        if (player.selectedLeftClickAttack === 'punch') {
+        if (DEBUG_MODE) console.log('Before setting isAttacking to true (Punch):', player.isAttacking);
+        player.isAttacking = true;
+        player.attackMove = 'punch';
+        player.attackTimer = player.attackDuration;
+        if (DEBUG_MODE) console.log('Left click attack initiated - player.isAttacking:', player.isAttacking, 'Attack Move:', player.attackMove);
+        }
+        else if (player.selectedLeftClickAttack === 'whipSlash' && player.canWhipSlash) { // Check cooldown
+            if (DEBUG_MODE) console.log('Initiating Whip Slash');
+            whipSlash.performWhipSlash(); // Call the whip slash function
+            player.canWhipSlash = false;
+            player.whipSlashTimer = player.whipSlashCooldown;
+        }
+        // Add logic for other left-click attacks if needed
+    } else if (button === 2) { // Right click
+        if (player.selectedRightClickAttack === 'hammer' && player.canThrowHammer) {
+        hammer.throwHammers();
+        player.canThrowHammer = false;
+        player.hammerThrowTimer = player.hammerThrowCooldown;
+        if (DEBUG_MODE) console.log('Right click attack initiated - player.canThrowHammer:', player.canThrowHammer, 'Attack Move:', player.attackMove);
+        }
+        else if (player.selectedRightClickAttack === 'chainLightning' && player.canChainLightning) { // Check cooldown
+            if (DEBUG_MODE) console.log('Initiating Chain Lightning');
+            chainLightning.performChainLightning(); // Call the chain lightning function
+            player.canChainLightning = false;
+            player.chainLightningTimer = player.chainLightningCooldown;
+        }
+        // Add logic for other right-click attacks if needed
     }
-    // Add logic for other left-click attacks if needed
-  } else if (button === 2 && player.canThrowHammer) { // Right click
-    if (player.selectedRightClickAttack === 'hammer') {
-      hammer.throwHammers();
-      player.canThrowHammer = false;
-      player.hammerThrowTimer = player.hammerThrowCooldown;
-      if (DEBUG_MODE) console.log('Right click attack initiated - player.canThrowHammer:', player.canThrowHammer);
+}
+
+// Update the cooldown handling function in player.js
+export function updatePlayerCooldowns() {
+    if (!player.canWhipSlash) {
+        player.whipSlashTimer--;
+        if (player.whipSlashTimer <= 0) {
+            player.canWhipSlash = true;
+        }
     }
-    // Add logic for other right-click attacks if needed
-  }
+    if (!player.canChainLightning) {
+        player.chainLightningTimer--;
+        if (player.chainLightningTimer <= 0) {
+            player.canChainLightning = true;
+        }
+    }
+    if (!player.canThrowHammer) {
+        player.hammerThrowTimer--;
+        if (player.hammerThrowTimer <= 0) {
+            player.canThrowHammer = true;
+        }
+    }
+    // Add cooldown handling for other abilities later
 }
 
 export { mouseClick, e };
