@@ -2,6 +2,7 @@ import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
 import { checkCollision } from '../utils/helpers.js';
+import { dpsMeter } from '../core/game.js';
 
 const novaAttack = {
     baseDamage: 20, // Using baseDamage for clarity
@@ -61,6 +62,7 @@ export function handleNovaAttack() {
                 if (distance < combinedRadius) {
                     const damage = novaAttack.baseDamage + player.INT; // Damage scales with INT
                     enemy.health -= damage;
+                    dpsMeter.recordDamage(damage);
                     if (enemy.health <= 0) {
                         const moneyWorth = enemy.moneyWorth || 25;
                         enemies.splice(j, 1);

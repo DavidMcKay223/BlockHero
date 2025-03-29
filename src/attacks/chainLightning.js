@@ -2,6 +2,7 @@ import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
 import { checkCollision } from '../utils/helpers.js';
+import { dpsMeter } from '../core/game.js';
 
 const chainLightningAttack = {
     baseDamage: 55, // Using baseDamage for clarity
@@ -89,6 +90,7 @@ function applyDamageToTarget(enemy, bounceNumber, beamIndex) {
         totalDamage *= damageRollMultiplier;
 
         enemy.health -= totalDamage;
+        dpsMeter.recordDamage(totalDamage);
         if (enemy.health <= 0) {
             const index = enemies.indexOf(enemy);
             if (index > -1) {

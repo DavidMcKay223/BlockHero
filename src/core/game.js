@@ -10,6 +10,53 @@ import { righteousFireInstance, DEBUG_MODE } from './main.js';
 import { drawArcaneExplosions } from '../talents/arcaneExplosion.js';
 import { isStatBoostActive } from '../talents/statBoost.js';
 
+const dpsMeter = {
+    damageLog: [], // Array to store { timestamp: number, damage: number }
+    lastDisplayTime: 0,
+    displayDuration: 3 * 60, // 3 seconds in game ticks (assuming 60 ticks per second)
+    currentDPS: 0,
+
+    recordDamage(damage) {
+        const now = Date.now();
+        this.damageLog.push({ timestamp: now, damage });
+        this.lastDisplayTime = now;
+    },
+
+    calculateDPS() {
+        const now = Date.now();
+        const threeSecondsAgo = now - 8000; // 3000 milliseconds
+        this.damageLog = this.damageLog.filter(entry => entry.timestamp >= threeSecondsAgo);
+
+        let totalDamage = 0;
+        for (const entry of this.damageLog) {
+            totalDamage += entry.damage;
+        }
+
+        this.currentDPS = totalDamage / 3; // Damage over the last 3 seconds
+    },
+
+    draw(ctx) {
+      const now = Date.now();
+      if (now - this.lastDisplayTime < this.displayDuration) {
+          this.calculateDPS();
+
+          const playerCenterX = player.x + player.width / 2;
+          const playerBottomY = player.y + player.height;
+          const textOffset = 20; // Adjust this value to control the distance below the player
+
+          const colors = ['red', 'blue', 'green', 'yellow'];
+          const randomIndex = Math.floor(Math.random() * colors.length);
+          ctx.fillStyle = colors[randomIndex];
+
+          ctx.font = '16px Arial';
+          const text = `DPS: ${Math.floor(this.currentDPS)}`;
+          const textWidth = ctx.measureText(text).width;
+
+          ctx.fillText(text, playerCenterX - textWidth / 2, playerBottomY + textOffset);
+      }
+  }
+};
+
 export function update() {
     handlePlayerInput();
     updatePlayerCooldowns();
@@ -83,5 +130,11 @@ export function draw(ctx) {
     whipSlash.drawWhipSlash(ctx);
     novaAttack.drawNovaAttack(ctx);
     drawArcaneExplosions(ctx); // Call drawArcaneExplosions
+
+    // Draw the DPS meter
+    dpsMeter.draw(ctx);
+
     ctx.restore(); // Restore the camera translation
 }
+
+export { handlePlayerInput, player, updatePlayerCooldowns, updateCamera, camera, dpsMeter };

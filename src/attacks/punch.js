@@ -2,6 +2,7 @@ import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
 import { checkCollision } from '../utils/helpers.js';
+import { dpsMeter } from '../core/game.js';
 
 const punchAttack = {
     duration: 20,
@@ -22,6 +23,7 @@ export function handlePunchAttack() {
                 if (player.attackMove === 'punch') {
                     const damage = punchAttack.baseDamage + player.STR; // Calculate damage with STR
                     currentEnemy.health -= damage;
+                    dpsMeter.recordDamage(damage);
                     if (currentEnemy.health <= 0) {
                         const originalMaxHealth = currentEnemy.maxHealth || 100;
                         const splitHealth = originalMaxHealth * 2;

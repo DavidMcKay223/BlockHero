@@ -2,6 +2,7 @@ import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
 import { checkCollision } from '../utils/helpers.js';
+import { dpsMeter } from '../core/game.js';
 
 const hammerSize = 10;
 const hammerColor = 'brown';
@@ -49,6 +50,7 @@ export function updateHammers() {
             if (checkCollision(hammer, enemy)) {
                 const damage = baseHammerDamage + player.STR; // Damage scales with STR
                 enemy.health -= damage;
+                dpsMeter.recordDamage(damage);
                 hammers.splice(i, 1);
                 if (enemy.health <= 0) {
                     const moneyWorth = enemy.moneyWorth || 25; // Get the enemy's money worth

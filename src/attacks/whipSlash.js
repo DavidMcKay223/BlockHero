@@ -2,6 +2,7 @@ import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
 import { checkCollision } from '../utils/helpers.js';
+import { dpsMeter } from '../core/game.js';
 
 const whipSlashAttack = {
     baseDamage: 80, // Using baseDamage for clarity
@@ -25,6 +26,7 @@ export function performWhipSlash() {
         if (checkCollision(whipHitbox, enemy)) {
             const damage = whipSlashAttack.baseDamage + player.STR + player.DEX; // Damage scales with STR and DEX
             enemy.health -= damage;
+            dpsMeter.recordDamage(damage);
             if (enemy.health <= 0) {
                 const originalMaxHealth = enemy.maxHealth || 100;
                 const splitHealth = originalMaxHealth / 4;
