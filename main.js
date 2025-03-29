@@ -2,6 +2,7 @@ import { update, draw } from './game.js';
 import { player, initiateAttack } from './player.js';
 import { spawnEnemy, enemies, updateEnemies, drawEnemies } from './enemy.js'; // Import the new enemy functions
 import * as items from './items.js'; // Import our items logic
+import RighteousFire from './Talent/righteousFire.js';
 
 export const DEBUG_MODE = false;
 const canvas = document.getElementById('gameCanvas');
@@ -135,6 +136,12 @@ document.addEventListener('keydown', (event) => {
         toggleShop();
     } else if (event.key === 'i' || event.key === 'I') { // Toggle inventory on 'I'
         toggleInventory();
+    } else if (event.key === '1') {
+        if(righteousFireInstance.isActive){
+            righteousFireInstance.deactivate();
+        }else{
+            righteousFireInstance.activate();
+        }
     }
 });
 
@@ -214,7 +221,7 @@ function gameLoop() {
 
     if (enemies.length === 0) {
         if (DEBUG_MODE) console.log('No enemies left, spawning more...');
-        for (let i = 0; i < respawnEnemyCount; i++) {
+        for (let i = 0; i < respawnEnemyCount * player.playerLevel; i++) {
             // Example of level-based enemy spawning (you can adjust the conditions and types)
             if (player.playerLevel > 2 && Math.random() < 0.4) {
                 spawnEnemy({ health: 120, speed: 1.8, movementPattern: 'chase' }); // Spawn a faster enemy
@@ -359,6 +366,8 @@ function unequipItem(slot) {
     displayEquippedGear();
     updateStatDisplay();
 }
+
+export const righteousFireInstance = new RighteousFire(player);
 
 window.onload = init;
 gameLoop();

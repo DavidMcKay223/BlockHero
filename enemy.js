@@ -124,7 +124,7 @@ export function updateEnemies() {
             enemy.x += Math.cos(angle) * enemy.speed;
             enemy.y += Math.sin(angle) * enemy.speed;
         }
-
+        
         // Change color based on health
         const healthPercentage = enemy.health / enemy.maxHealth;
         if (healthPercentage > 0.7) {
@@ -158,6 +158,12 @@ export function drawEnemies(ctx) {
             const healthPercentage = enemy.health / enemy.maxHealth;
             const currentHealthBarWidth = healthPercentage * healthBarWidth;
             ctx.fillRect(healthBarX, healthBarY, currentHealthBarWidth, healthBarHeight);
+
+            if (enemy.isBurning) {
+                ctx.strokeStyle = 'orange'; // Or another bright color
+                ctx.lineWidth = 5;
+                ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            }
 
             // You could add logic here to draw different "block types"
             // For example, if enemy.blockType === 'gooey_green', draw a different shape or texture
