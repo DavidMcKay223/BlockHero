@@ -50,6 +50,112 @@
             padding: 8px 15px;
             cursor: pointer;
         }
+        #shopMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            font-family: sans-serif;
+            z-index: 10; /* Ensure it's on top of the canvas */
+        }
+        #shopMenu h2 {
+            margin-top: 0;
+        }
+        .shop-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 300px;
+        }
+        .shop-item-details {
+            flex-grow: 1;
+        }
+        .shop-item-stats {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+        .shop-item button {
+            padding: 8px 15px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        #inventoryMenu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            font-family: sans-serif;
+            z-index: 10; /* Ensure it's on top */
+            width: 400px;
+        }
+        #inventoryMenu h2 {
+            margin-top: 0;
+        }
+        .inventory-section {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        .inventory-section h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .inventory-item {
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inventory-item-details {
+            flex-grow: 1;
+        }
+        .inventory-item-stats {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+        .inventory-item button {
+            padding: 6px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .equipped-item {
+            padding: 8px;
+            border: 1px solid #777;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .equipped-item-details {
+            flex-grow: 1;
+        }
+        .equipped-item button {
+            padding: 6px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -60,7 +166,8 @@
             DEX: <span id="dexValue"></span><br>
             INT: <span id="intValue"></span><br>
             Money: <span id="moneyValue"></span><br>
-            Kills: <span id="killsValue"></span>
+            Kills: <span id="killsValue"></span><br>
+            Level: <span id="levelValue"></span>
         </div>
     </div>
 
@@ -99,6 +206,28 @@
         </div>
 
         <button id="closeMenuButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close Menu</button>
+    </div>
+
+    <div id="shopMenu" style="display: none;">
+        <h2>Shop</h2>
+        <div id="shopInventoryDisplay">
+        </div>
+        <button id="closeShopButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close Shop</button>
+    </div>
+
+    <div id="inventoryMenu" style="display: none;">
+        <h2>Inventory & Equipment</h2>
+        <div class="inventory-section">
+            <h3>Equipped Gear</h3>
+            <div id="equippedItemsDisplay">
+                </div>
+        </div>
+        <div class="inventory-section">
+            <h3>Inventory</h3>
+            <div id="inventoryItemsDisplay">
+                </div>
+        </div>
+        <button id="closeInventoryButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close</button>
     </div>
 
     <script type="module" src="main.js"></script>

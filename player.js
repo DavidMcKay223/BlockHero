@@ -37,7 +37,18 @@ export const player = {
     // New stats
     STR: 10, // Strength
     DEX: 10, // Dexterity
-    INT: 10  // Intelligence
+    INT: 10,  // Intelligence
+    playerLevel: 1, // Initial player level
+    killsForNextLevel: 50, // Kills needed to reach the next level (level 2)
+    inventory: [], // Array to hold owned items
+    equipped: { // Object to hold equipped gear
+        helmet: null,
+        chest: null,
+        weapon: null,
+        boots: null,
+        ring: null,
+        amulet: null
+    }
 };
 
 export const keys = {};

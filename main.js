@@ -1,8 +1,9 @@
 import { update, draw } from './game.js';
 import { player, initiateAttack } from './player.js';
 import { spawnEnemy, enemies } from './enemy.js';
+import * as items from './items.js'; // Import our items logic
 
-export const DEBUG_MODE = false; // Export DEBUG_MODE
+export const DEBUG_MODE = false;
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -14,7 +15,7 @@ export { canvas, ctx };
 canvas.width = gameWorldWidth;
 canvas.height = gameWorldHeight;
 
-player.y = canvas.height / 2 - 25; // Initialize player.y after canvas
+player.y = canvas.height / 2 - 25;
 
 let mouseX = 0;
 let mouseY = 0;
@@ -26,14 +27,12 @@ canvas.addEventListener('mousemove', (event) => {
 });
 
 canvas.addEventListener('mousedown', (event) => {
-    // mouseClick and e are now managed in player.js if needed there
     if (DEBUG_MODE) console.log('mousedown event - button:', event.button, 'clientX:', event.clientX, 'clientY:', event.clientY);
     initiateAttack(event.button);
     event.preventDefault();
 });
 
 canvas.addEventListener('mouseup', (event) => {
-    // mouseClick is now managed in player.js if needed there
     if (DEBUG_MODE) console.log('mouseup event - button:', event.button, 'clientX:', event.clientX, 'clientY:', event.clientY);
 });
 
@@ -46,14 +45,13 @@ const leftClickAttackSelect = document.getElementById('leftClickAttack');
 const rightClickAttackSelect = document.getElementById('rightClickAttack');
 const closeMenuButton = document.getElementById('closeMenuButton');
 
-// Get stat display elements
 const strValueDisplay = document.getElementById('strValue');
 const dexValueDisplay = document.getElementById('dexValue');
 const intValueDisplay = document.getElementById('intValue');
 const moneyValueDisplay = document.getElementById('moneyValue');
 const killsValueDisplay = document.getElementById('killsValue');
+const levelValueDisplay = document.getElementById('levelValue');
 
-// Get stat increase button elements
 const increaseStrButton = document.getElementById('increaseStr');
 const increaseDexButton = document.getElementById('increaseDex');
 const increaseIntButton = document.getElementById('increaseInt');
@@ -61,57 +59,95 @@ const strCostDisplay = document.getElementById('strCost');
 const dexCostDisplay = document.getElementById('dexCost');
 const intCostDisplay = document.getElementById('intCost');
 
-// Stat increase costs
 let strCost = 50;
 let dexCost = 50;
 let intCost = 50;
 
-// Function to update the stat display
+const shopMenu = document.getElementById('shopMenu');
+const shopInventoryDisplay = document.getElementById('shopInventoryDisplay');
+const closeShopButton = document.getElementById('closeShopButton');
+let shopOpen = false;
+let currentShopInventory = [];
+
+const inventoryMenu = document.getElementById('inventoryMenu');
+const inventoryItemsDisplay = document.getElementById('inventoryItemsDisplay');
+const equippedItemsDisplay = document.getElementById('equippedItemsDisplay');
+const closeInventoryButton = document.getElementById('closeInventoryButton');
+let inventoryOpen = false;
+
 function updateStatDisplay() {
-    strValueDisplay.textContent = player.STR;
-    dexValueDisplay.textContent = player.DEX;
-    intValueDisplay.textContent = player.INT;
+    let totalSTR = player.STR;
+    let totalDEX = player.DEX;
+    let totalINT = player.INT;
+
+    for (const slot in player.equipped) {
+        const item = player.equipped[slot];
+        if (item) {
+            totalSTR += item.stats?.STR || 0;
+            totalDEX += item.stats?.DEX || 0;
+            totalINT += item.stats?.INT || 0;
+        }
+    }
+
+    strValueDisplay.textContent = totalSTR;
+    dexValueDisplay.textContent = totalDEX;
+    intValueDisplay.textContent = totalINT;
     moneyValueDisplay.textContent = player.money;
     killsValueDisplay.textContent = player.killCount;
-    strCostDisplay.textContent = `(${strCost} Money)`;
-    dexCostDisplay.textContent = `(${dexCost} Money)`;
-    intCostDisplay.textContent = `(${intCost} Money)`;
+    levelValueDisplay.textContent = player.playerLevel;
+    strCostDisplay.textContent = `(${Math.round(strCost)} Money)`;
+    dexCostDisplay.textContent = `(${Math.round(dexCost)} Money)`;
+    intCostDisplay.textContent = `(${Math.round(intCost)} Money)`;
 }
 
 let menuOpen = false;
 
-// Function to toggle the menu visibility
 function toggleMenu() {
     menuOpen = !menuOpen;
     attackMenu.style.display = menuOpen ? 'flex' : 'none';
-
-    // When opening the menu, set the dropdowns to the current player selections
     if (menuOpen) {
         leftClickAttackSelect.value = player.selectedLeftClickAttack;
         rightClickAttackSelect.value = player.selectedRightClickAttack;
     }
 }
 
-// Event listener to toggle the menu (e.g., on 'M' key press)
+function toggleShop() {
+    shopOpen = !shopOpen;
+    shopMenu.style.display = shopOpen ? 'flex' : 'none';
+    if (shopOpen) {
+        generateAndDisplayShop();
+    }
+}
+
+function toggleInventory() {
+    inventoryOpen = !inventoryOpen;
+    inventoryMenu.style.display = inventoryOpen ? 'flex' : 'none';
+    if (inventoryOpen) {
+        displayInventory();
+        displayEquippedGear();
+    }
+}
+
 document.addEventListener('keydown', (event) => {
     if (event.key === 'm' || event.key === 'M') {
         toggleMenu();
+    } else if (event.key === 'b' || event.key === 'B') {
+        toggleShop();
+    } else if (event.key === 'i' || event.key === 'I') { // Toggle inventory on 'I'
+        toggleInventory();
     }
 });
 
-// Event listener for left click attack selection
 leftClickAttackSelect.addEventListener('change', (event) => {
     player.selectedLeftClickAttack = event.target.value;
     if (DEBUG_MODE) console.log('Left click attack selected:', player.selectedLeftClickAttack);
 });
 
-// Event listener for right click attack selection
 rightClickAttackSelect.addEventListener('change', (event) => {
     player.selectedRightClickAttack = event.target.value;
     if (DEBUG_MODE) console.log('Right click attack selected:', player.selectedRightClickAttack);
 });
 
-// Event listener for the close button
 closeMenuButton.addEventListener('click', () => {
     toggleMenu();
 });
@@ -143,32 +179,176 @@ increaseIntButton.addEventListener('click', () => {
     }
 });
 
-const initialEnemyCount = 5; // You can change this number to spawn more or fewer enemies
-const respawnEnemyCount = 5; // Number of enemies to respawn
+closeShopButton.addEventListener('click', () => {
+    toggleShop();
+});
+
+closeInventoryButton.addEventListener('click', () => {
+    toggleInventory();
+});
+
+const initialEnemyCount = 5;
+const respawnEnemyCount = 5;
 
 function init() {
-    //for (let i = 0; i < initialEnemyCount; i++) {
-    //     spawnEnemy();
-    //}
-    updateStatDisplay(); // Initial call to display stats
+    updateStatDisplay();
+    currentShopInventory = items.generateShopInventory(5, player.playerLevel);
 }
 
 function gameLoop() {
     update();
     draw(ctx);
 
-    // Check if there are no enemies left
+    if (player.killCount >= player.killsForNextLevel) {
+        player.playerLevel++;
+        player.killsForNextLevel *= 2;
+        console.log(`Player leveled up! Now level ${player.playerLevel}`);
+        if (shopOpen) {
+            generateAndDisplayShop();
+        } else {
+            currentShopInventory = items.generateShopInventory(5, player.playerLevel);
+        }
+    }
+
     if (enemies.length === 0) {
         if (DEBUG_MODE) console.log('No enemies left, spawning more...');
-        // Spawn 5 new enemies
         for (let i = 0; i < respawnEnemyCount; i++) {
             spawnEnemy();
         }
     }
 
-    updateStatDisplay(); // Update stats on each frame
+    updateStatDisplay();
 
     requestAnimationFrame(gameLoop);
+}
+
+function generateAndDisplayShop() {
+    shopInventoryDisplay.innerHTML = '';
+    currentShopInventory = items.generateShopInventory(5, player.playerLevel);
+
+    currentShopInventory.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('shop-item');
+
+        const detailsDiv = document.createElement('div');
+        detailsDiv.classList.add('shop-item-details');
+        detailsDiv.innerHTML = `<strong>${item.name}</strong> (${item.type})<br>Cost: $${item.cost}`;
+
+        const statsDiv = document.createElement('div');
+        statsDiv.classList.add('shop-item-stats');
+        let statsText = '';
+        for (const stat in item.stats) {
+            statsText += `${stat}: +${item.stats[stat]} `;
+        }
+        statsDiv.textContent = statsText;
+        detailsDiv.appendChild(statsDiv);
+
+        const buyButton = document.createElement('button');
+        buyButton.textContent = 'Buy';
+        buyButton.addEventListener('click', () => {
+            buyItem(index);
+        });
+
+        itemDiv.appendChild(detailsDiv);
+        itemDiv.appendChild(buyButton);
+        shopInventoryDisplay.appendChild(itemDiv);
+    });
+}
+
+function buyItem(itemIndex) {
+    const itemToBuy = currentShopInventory[itemIndex];
+    if (player.money >= itemToBuy.cost) {
+        player.money -= itemToBuy.cost;
+        player.inventory.push(itemToBuy);
+        console.log(`Bought ${itemToBuy.name}. Inventory:`, player.inventory);
+        updateStatDisplay();
+        if (shopOpen) {
+            generateAndDisplayShop(); // Refresh the shop UI
+        }
+    } else {
+        console.log("Not enough money!");
+    }
+}
+
+function displayInventory() {
+    inventoryItemsDisplay.innerHTML = '';
+    player.inventory.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('inventory-item');
+
+        const detailsDiv = document.createElement('div');
+        detailsDiv.classList.add('inventory-item-details');
+        detailsDiv.innerHTML = `<strong>${item.name}</strong> (${item.type})`;
+
+        const statsDiv = document.createElement('div');
+        statsDiv.classList.add('inventory-item-stats');
+        let statsText = '';
+        for (const stat in item.stats) {
+            statsText += `${stat}: +${item.stats[stat]} `;
+        }
+        statsDiv.textContent = statsText;
+        detailsDiv.appendChild(statsDiv);
+
+        const equipButton = document.createElement('button');
+        equipButton.textContent = 'Equip';
+        equipButton.addEventListener('click', () => {
+            equipItem(index);
+        });
+
+        itemDiv.appendChild(detailsDiv);
+        itemDiv.appendChild(equipButton);
+        inventoryItemsDisplay.appendChild(itemDiv);
+    });
+}
+
+function displayEquippedGear() {
+    equippedItemsDisplay.innerHTML = '';
+    for (const slot in player.equipped) {
+        const item = player.equipped[slot];
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('equipped-item');
+
+        const detailsDiv = document.createElement('div');
+        detailsDiv.classList.add('equipped-item-details');
+        detailsDiv.innerHTML = `<strong>${slot.charAt(0).toUpperCase() + slot.slice(1)}:</strong> ${item ? item.name : 'Empty'}`;
+
+        if (item) {
+            const unequipButton = document.createElement('button');
+            unequipButton.textContent = 'Unequip';
+            unequipButton.addEventListener('click', () => {
+                unequipItem(slot);
+            });
+            detailsDiv.appendChild(unequipButton);
+        }
+
+        itemDiv.appendChild(detailsDiv);
+        equippedItemsDisplay.appendChild(itemDiv);
+    }
+}
+
+function equipItem(inventoryIndex) {
+    const itemToEquip = player.inventory[inventoryIndex];
+    const slot = itemToEquip.type;
+
+    if (player.equipped[slot]) {
+        // If there's already an item in that slot, move it back to inventory
+        player.inventory.push(player.equipped[slot]);
+    }
+
+    player.equipped[slot] = itemToEquip;
+    player.inventory.splice(inventoryIndex, 1); // Remove the equipped item from inventory
+    displayInventory();
+    displayEquippedGear();
+    updateStatDisplay();
+}
+
+function unequipItem(slot) {
+    const unequippedItem = player.equipped[slot];
+    player.equipped[slot] = null;
+    player.inventory.push(unequippedItem);
+    displayInventory();
+    displayEquippedGear();
+    updateStatDisplay();
 }
 
 window.onload = init;
