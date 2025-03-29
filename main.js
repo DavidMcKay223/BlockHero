@@ -41,8 +41,12 @@ canvas.addEventListener('contextmenu', (event) => {
   event.preventDefault();
 });
 
+const initialEnemyCount = 5; // You can change this number to spawn more or fewer enemies
+
 function init() {
-  spawnEnemy();
+  for (let i = 0; i < initialEnemyCount; i++) {
+    spawnEnemy();
+  }
 }
 
 function gameLoop() {
