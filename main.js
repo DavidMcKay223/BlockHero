@@ -1,6 +1,6 @@
 import { update, draw } from './game.js';
 import { player, initiateAttack } from './player.js';
-import { spawnEnemy, enemies } from './enemy.js';
+import { spawnEnemy, enemies, updateEnemies, drawEnemies } from './enemy.js'; // Import the new enemy functions
 import * as items from './items.js'; // Import our items logic
 
 export const DEBUG_MODE = false;
@@ -155,7 +155,7 @@ closeMenuButton.addEventListener('click', () => {
 increaseStrButton.addEventListener('click', () => {
     if (player.money >= strCost) {
         player.money -= strCost;
-        player.STR++;
+        player.STR+=5;
         strCost *= 1.20;
         updateStatDisplay();
     }
@@ -164,7 +164,7 @@ increaseStrButton.addEventListener('click', () => {
 increaseDexButton.addEventListener('click', () => {
     if (player.money >= dexCost) {
         player.money -= dexCost;
-        player.DEX++;
+        player.DEX+=5;
         dexCost *= 1.20;
         updateStatDisplay();
     }
@@ -173,7 +173,7 @@ increaseDexButton.addEventListener('click', () => {
 increaseIntButton.addEventListener('click', () => {
     if (player.money >= intCost) {
         player.money -= intCost;
-        player.INT++;
+        player.INT+=5;
         intCost *= 1.20;
         updateStatDisplay();
     }
@@ -197,7 +197,9 @@ function init() {
 
 function gameLoop() {
     update();
+    updateEnemies(); // Call the enemy update function
     draw(ctx);
+    drawEnemies(ctx); // Call the enemy draw function
 
     if (player.killCount >= player.killsForNextLevel) {
         player.playerLevel++;
@@ -213,7 +215,14 @@ function gameLoop() {
     if (enemies.length === 0) {
         if (DEBUG_MODE) console.log('No enemies left, spawning more...');
         for (let i = 0; i < respawnEnemyCount; i++) {
-            spawnEnemy();
+            // Example of level-based enemy spawning (you can adjust the conditions and types)
+            if (player.playerLevel > 2 && Math.random() < 0.4) {
+                spawnEnemy({ health: 120, speed: 1.8, movementPattern: 'chase' }); // Spawn a faster enemy
+            } else if (player.playerLevel > 4 && Math.random() < 0.25) {
+                spawnEnemy({ health: 180, sizeRatio: 1.1, moneyWorth: 60 }); // Spawn a tankier enemy
+            } else {
+                spawnEnemy(); // Spawn a basic enemy
+            }
         }
     }
 

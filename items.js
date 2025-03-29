@@ -20,8 +20,8 @@ export function generateRandomItem(level = 1) {
     const numStats = Math.floor(Math.random() * 3) + 1; // 1 to 3 random stats
     let totalStatBonus = 0;
 
-    // Determine how many stats to give based on a loose "power level" influenced by level
-    const maxBonusPerStat = 1 + level; // Increase potential bonus with level - MODIFIED
+    // Determine how many stats to give based on a stronger exponential "power level" influenced by level
+    const maxBonusPerStat = Math.floor(Math.pow(level, 1.7)) + 1; // Strong exponential scaling for stats - UNCHANGED
 
     // Randomly pick stats to apply
     const availableStats = [...statTypes];
@@ -33,8 +33,8 @@ export function generateRandomItem(level = 1) {
         totalStatBonus += bonus;
     }
 
-    // Calculate a basic cost based on the number and magnitude of stats
-    const cost = Math.max(10, totalStatBonus * 20 * level); // MODIFIED cost multiplier
+    // Calculate a basic cost based on the number and magnitude of stats with a linear dependency on level - MODIFIED
+    const cost = Math.max(10, Math.floor(totalStatBonus * 75 * level));
 
     return new Item(name, type, stats, cost);
 }

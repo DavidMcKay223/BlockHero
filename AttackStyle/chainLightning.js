@@ -7,62 +7,68 @@ const chainLightningAttack = {
     baseDamage: 55, // Using baseDamage for clarity
     range: 450,
     bounceRange: 200, // Range for the lightning to bounce to another enemy
-    maxBounces: 3, // Base maximum number of enemies the lightning can hit
+    maxBounces: 6, // Base maximum number of enemies the lightning can hit
     lightningColor: 'yellow',
     thickness: 25,
     duration: 15 // Duration of each lightning segment
 };
 
-let isChainLightningActive = false;
-let chainLightningTimer = 0;
-let currentTargets = []; // Array to store the sequence of hit enemies
-let bounceCount = 0;
+let activeChainLightnings = []; // Array to store multiple active chain lightning beams
 
 export function performChainLightning() {
     if (DEBUG_MODE) console.log('Performing Chain Lightning');
-    currentTargets = [];
-    bounceCount = 0;
-    let firstTarget = findClosestEnemy(player); // Find the closest enemy to the player
+    const numBeams = 1 + Math.floor(player.INT / 50);
 
-    if (firstTarget) {
-        isChainLightningActive = true;
-        chainLightningTimer = chainLightningAttack.duration;
-        currentTargets.push(firstTarget);
-        applyDamage(firstTarget, bounceCount); // Pass bounceCount for damage multiplier
-        bounceCount++;
-    }
-}
+    for (let i = 0; i < numBeams; i++) {
+        let currentTargets = [];
+        let bounceCount = 0;
+        let firstTarget = findClosestEnemy(player, chainLightningAttack.range, []); // Find the closest enemy
 
-// We still need to manage the visual effect and bouncing
-export function handleChainLightningAttack() {
-    if (isChainLightningActive && currentTargets.length > 0) {
-        chainLightningTimer--;
+        if (firstTarget) {
+            currentTargets.push(firstTarget);
+            applyDamageToTarget(firstTarget, bounceCount, i); // Pass beam index for potential variations
+            bounceCount++;
 
-        const extraBounces = Math.floor(player.INT / 100);
-        const totalMaxBounces = chainLightningAttack.maxBounces + extraBounces;
-
-        if (chainLightningTimer <= 0) {
-            if (bounceCount < totalMaxBounces) {
-                const lastTarget = currentTargets[currentTargets.length - 1];
-                const nextTarget = findClosestEnemy(lastTarget, chainLightningAttack.bounceRange, currentTargets);
-                if (nextTarget) {
-                    currentTargets.push(nextTarget);
-                    applyDamage(nextTarget, bounceCount); // Pass current bounceCount
-                    bounceCount++;
-                    chainLightningTimer = chainLightningAttack.duration; // Reset timer for the next bounce
-                } else {
-                    isChainLightningActive = false;
-                }
-            } else {
-                isChainLightningActive = false;
-            }
+            activeChainLightnings.push({
+                currentTargets: currentTargets,
+                bounceCount: bounceCount,
+                timer: chainLightningAttack.duration,
+                beamIndex: i, // Identifier for the beam
+                maxTotalBounces: chainLightningAttack.maxBounces + Math.floor(player.INT / 100)
+            });
         }
-    } else if (isChainLightningActive) {
-        isChainLightningActive = false; // Ensure inactive if no targets
     }
 }
 
-function applyDamage(enemy, bounceNumber) {
+export function handleChainLightningAttack() {
+    activeChainLightnings = activeChainLightnings.filter(lightning => {
+        if (lightning.currentTargets.length > 0) {
+            lightning.timer--;
+
+            if (lightning.timer <= 0) {
+                if (lightning.bounceCount <= lightning.maxTotalBounces) {
+                    const lastTarget = lightning.currentTargets[lightning.currentTargets.length - 1];
+                    const nextTarget = findClosestEnemy(lastTarget, chainLightningAttack.bounceRange, lightning.currentTargets);
+                    if (nextTarget) {
+                        lightning.currentTargets.push(nextTarget);
+                        applyDamageToTarget(nextTarget, lightning.bounceCount, lightning.beamIndex);
+                        lightning.bounceCount++;
+                        lightning.timer = chainLightningAttack.duration;
+                        return true; // Continue if bounced
+                    } else {
+                        return false; // No more targets to bounce to, despawn
+                    }
+                } else {
+                    return false; // Max bounces reached, despawn
+                }
+            }
+            return true; // Continue if timer > 0
+        }
+        return false; // Should not reach here if logic is correct
+    });
+}
+
+function applyDamageToTarget(enemy, bounceNumber, beamIndex) {
     if (enemy && enemy.health > 0) {
         const intBonusDamage = player.INT;
         const damageMultiplier = Math.pow(2, bounceNumber); // Damage doubles per jump
@@ -73,10 +79,8 @@ function applyDamage(enemy, bounceNumber) {
             const index = enemies.indexOf(enemy);
             if (index > -1) {
                 enemies.splice(index, 1);
-                // No spawning of new enemies upon chain lightning kill
-
-                player.killCount++; // Increment kill count
-                player.money += enemy.moneyWorth || 25; // Add the full money worth of the enemy
+                player.killCount++;
+                player.money += enemy.moneyWorth || 25;
             }
         }
     }
@@ -108,16 +112,19 @@ function findClosestEnemy(origin, range = chainLightningAttack.range, ignoredTar
 }
 
 export function drawChainLightning(ctx) {
-    if (isChainLightningActive && currentTargets.length > 0) {
-        ctx.strokeStyle = chainLightningAttack.lightningColor;
-        ctx.lineWidth = chainLightningAttack.thickness;
-        ctx.beginPath();
-        ctx.moveTo(player.x + player.width / 2, player.y + player.height / 2); // Start at the player
+    ctx.strokeStyle = chainLightningAttack.lightningColor;
+    ctx.lineWidth = chainLightningAttack.thickness;
 
-        for (let i = 0; i < currentTargets.length; i++) {
-            const target = currentTargets[i];
-            ctx.lineTo(target.x + target.width / 2, target.y + target.height / 2);
+    for (const lightning of activeChainLightnings) {
+        if (lightning.currentTargets.length > 0) {
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width / 2, player.y + player.height / 2); // Start at the player for each beam
+
+            for (let i = 0; i < lightning.currentTargets.length; i++) {
+                const target = lightning.currentTargets[i];
+                ctx.lineTo(target.x + target.width / 2, target.y + target.height / 2);
+            }
+            ctx.stroke();
         }
-        ctx.stroke();
     }
 }
