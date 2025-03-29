@@ -21,10 +21,23 @@ export function handlePunchAttack() {
         if (player.attackMove === 'punch') {
           currentEnemy.health -= punchAttack.damage;
           if (currentEnemy.health <= 0) {
+            const originalMaxHealth = currentEnemy.maxHealth || 100;
+            const splitHealth = originalMaxHealth * 2;
+
+            const originalSizeRatio = currentEnemy.sizeRatio || 1;
+            const splitSizeRatio = originalSizeRatio * 0.5;
+
+            const originalMoneyWorth = currentEnemy.moneyWorth || 25;
+            const splitMoneyWorth = originalMoneyWorth * 2;
+
             enemies.splice(i, 1);
-            spawnEnemy();
-            player.killCount++; // Increment kill count
-            player.money += 25; // Add some money (you can adjust this amount)
+
+            // Spawn two new enemies
+            spawnEnemy({ health: splitHealth, sizeRatio: splitSizeRatio, moneyWorth: splitMoneyWorth });
+            spawnEnemy({ health: splitHealth, sizeRatio: splitSizeRatio, moneyWorth: splitMoneyWorth });
+
+            player.killCount++;
+            player.money += originalMoneyWorth * 0.50;
           }
         }
       }

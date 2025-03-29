@@ -66,9 +66,10 @@ function applyDamage(enemy) {
             const index = enemies.indexOf(enemy);
             if (index > -1) {
                 enemies.splice(index, 1);
-                spawnEnemy();
+                // No spawning of new enemies upon chain lightning kill
+
                 player.killCount++; // Increment kill count
-                player.money += 25; // Add some money (you can adjust this amount)
+                player.money += enemy.moneyWorth || 25; // Add the full money worth of the enemy
             }
         }
     }

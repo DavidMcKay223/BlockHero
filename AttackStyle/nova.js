@@ -57,10 +57,11 @@ export function handleNovaAttack() {
                 if (distance < combinedRadius) {
                     enemy.health -= novaAttack.damage;
                     if (enemy.health <= 0) {
+                        const moneyWorth = enemy.moneyWorth || 25;
                         enemies.splice(j, 1);
-                        spawnEnemy();
+                        // No spawning of a new enemy - the enemy is shattered!
                         player.killCount++;
-                        player.money += 35;
+                        player.money += moneyWorth;
                     }
                     novaProjectiles.splice(i, 1); // Remove projectile after hitting
                     break;

@@ -4,11 +4,11 @@ import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../main.js'; // Imp
 import { checkCollision } from '../utils.js';
 
 const whipSlashAttack = {
-  damage: 80,
-  range: 140,
-  whipColor: 'purple',
-  thickness: 8,
-  duration: 10 // We might still use this for the visual effect duration
+    damage: 80,
+    range: 140,
+    whipColor: 'purple',
+    thickness: 8,
+    duration: 10 // We might still use this for the visual effect duration
 };
 
 let isWhipSlashActive = false;
@@ -25,10 +25,25 @@ export function performWhipSlash() {
         if (checkCollision(whipHitbox, enemy)) {
             enemy.health -= whipSlashAttack.damage;
             if (enemy.health <= 0) {
+                const originalMaxHealth = enemy.maxHealth || 100;
+                const splitHealth = originalMaxHealth / 4;
+
+                const originalSizeRatio = enemy.sizeRatio || 1;
+                const splitSizeRatio = originalSizeRatio * 1.20; // Increase size by 20%
+
+                const originalMoneyWorth = enemy.moneyWorth || 25;
+                const splitMoneyWorth = originalMoneyWorth / 4;
+
                 enemies.splice(i, 1);
-                spawnEnemy();
+
+                // Spawn four new enemies at random locations
+                spawnEnemy({ health: splitHealth, sizeRatio: splitSizeRatio, moneyWorth: splitMoneyWorth });
+                spawnEnemy({ health: splitHealth, sizeRatio: splitSizeRatio, moneyWorth: splitMoneyWorth });
+                spawnEnemy({ health: splitHealth, sizeRatio: splitSizeRatio, moneyWorth: splitMoneyWorth });
+                spawnEnemy({ health: splitHealth, sizeRatio: splitSizeRatio, moneyWorth: splitMoneyWorth });
+
                 player.killCount++; // Increment kill count
-                player.money += 50; // Add some money (you can adjust this amount)
+                player.money += originalMoneyWorth; // Award the full money worth for defeating the original enemy
             }
         }
     }
@@ -45,21 +60,21 @@ export function handleWhipSlashAttack() {
 }
 
 function getWhipHitbox() {
-  return {
-    x: player.x + player.width,
-    y: player.y + player.height / 4,
-    width: whipSlashAttack.range,
-    height: player.height / 2
-  };
+    return {
+        x: player.x + player.width,
+        y: player.y + player.height / 4,
+        width: whipSlashAttack.range,
+        height: player.height / 2
+    };
 }
 
 export function drawWhipSlash(ctx) {
-  if (isWhipSlashActive) {
-    ctx.strokeStyle = whipSlashAttack.whipColor;
-    ctx.lineWidth = whipSlashAttack.thickness;
-    ctx.beginPath();
-    ctx.moveTo(player.x + player.width, player.y + player.height / 2);
-    ctx.lineTo(player.x + player.width + whipSlashAttack.range, player.y + player.height / 2);
-    ctx.stroke();
-  }
+    if (isWhipSlashActive) {
+        ctx.strokeStyle = whipSlashAttack.whipColor;
+        ctx.lineWidth = whipSlashAttack.thickness;
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.width, player.y + player.height / 2);
+        ctx.lineTo(player.x + player.width + whipSlashAttack.range, player.y + player.height / 2);
+        ctx.stroke();
+    }
 }
