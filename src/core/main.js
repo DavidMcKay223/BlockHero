@@ -1,9 +1,9 @@
 import { update, draw } from './game.js';
 import { player, handlePlayerInput, updatePlayerCooldowns, initiateAttack } from './player.js';
 import { spawnEnemy, enemies, updateEnemies, drawEnemies } from './enemy.js';
-import * as items from './items.js';
-import RighteousFire from './Talent/righteousFire.js';
-import { updateArcaneExplosions, performArcaneExplosion, initialExplosionRadius } from './Talent/arcaneExplosion.js'; // Import Arcane Explosion functions and radius
+import * as items from '../components/items.js';
+import RighteousFire from '../talents/righteousFire.js';
+import { updateArcaneExplosions, performArcaneExplosion, initialExplosionRadius } from '../talents/arcaneExplosion.js';
 
 export const DEBUG_MODE = false;
 const canvas = document.getElementById('gameCanvas');
@@ -246,7 +246,7 @@ async function gameLoop() {
     updateEnemies();
 
     if (player.arcaneExplosionOrbs && player.arcaneExplosionOrbs.length > 0) {
-        const arcaneExplosionModule = await import('./Talent/arcaneExplosion.js');
+        const arcaneExplosionModule = await import('../talents/arcaneExplosion.js');
         await arcaneExplosionModule.updateArcaneExplosions(player.arcaneExplosionOrbs);
     }
 

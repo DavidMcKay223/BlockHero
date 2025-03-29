@@ -1,13 +1,13 @@
 import { handlePlayerInput, player, updatePlayerCooldowns } from './player.js';
 import { updateCamera, camera } from './camera.js';
-import * as hammer from './AttackStyle/hammer.js';
-import * as punch from './AttackStyle/punch.js';
-import * as chainLightning from './AttackStyle/chainLightning.js';
-import * as whipSlash from './AttackStyle/whipSlash.js';
+import * as hammer from '../attacks/hammer.js';
+import * as punch from '../attacks/punch.js';
+import * as chainLightning from '../attacks/chainLightning.js';
+import * as whipSlash from '../attacks/whipSlash.js';
 import * as enemy from './enemy.js';
-import * as novaAttack from './AttackStyle/nova.js';
-import { righteousFireInstance } from './main.js';
-import { drawArcaneExplosions } from './Talent/arcaneExplosion.js' // Import drawArcaneExplosions
+import * as novaAttack from '../attacks/nova.js';
+import { righteousFireInstance, DEBUG_MODE } from './main.js';
+import { drawArcaneExplosions } from '../talents/arcaneExplosion.js';
 
 export function update() {
   handlePlayerInput();

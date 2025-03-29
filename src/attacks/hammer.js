@@ -1,7 +1,7 @@
-import { player } from '../player.js';
-import { enemies, spawnEnemy } from '../enemy.js';
-import { gameWorldWidth, gameWorldHeight } from '../main.js';
-import { checkCollision } from '../utils.js';
+import { player } from '../core/player.js';
+import { enemies, spawnEnemy } from '../core/enemy.js';
+import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
+import { checkCollision } from '../utils/helpers.js';
 
 const hammerSize = 10;
 const hammerColor = 'brown';

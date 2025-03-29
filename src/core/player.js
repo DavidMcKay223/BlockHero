@@ -1,9 +1,9 @@
 import { canvas, gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
-import * as punch from './AttackStyle/punch.js';
-import * as hammer from './AttackStyle/hammer.js';
-import * as chainLightning from './AttackStyle/chainLightning.js';
-import * as whipSlash from './AttackStyle/whipSlash.js';
-import * as novaAttack from './AttackStyle/nova.js'; // Import nova attack
+import * as punch from '../attacks/punch.js';
+import * as hammer from '../attacks/hammer.js';
+import * as chainLightning from '../attacks/chainLightning.js';
+import * as whipSlash from '../attacks/whipSlash.js';
+import * as novaAttack from '../attacks/nova.js';
 
 export const player = {
     x: 50,
@@ -61,7 +61,7 @@ let e;
 document.addEventListener('keydown', (event) => {
     keys[event.key] = true;
     if (event.key === '2' && player.selectedNumber2Talent === 'arcaneExplosion' && player.canArcaneExplosion) {
-        import('./Talent/arcaneExplosion.js').then(module => {
+        import('./talents/arcaneExplosion.js').then(module => {
             module.performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2); // Pass player position
             player.canArcaneExplosion = false;
             player.arcaneExplosionTimer = player.arcaneExplosionCooldown;

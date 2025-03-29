@@ -2,161 +2,7 @@
 <html>
 <head>
     <title>Block Battle</title>
-    <style>
-        body {
-            margin: 0;
-            display: flex; /* Enable flexbox for the body */
-            justify-content: center; /* Center content horizontally */
-            align-items: center; /* Center content vertically */
-            min-height: 100vh; /* Ensure the body takes up at least the full viewport height */
-            position: relative; /* To allow absolute positioning of other elements */
-        }
-        canvas {
-            display: block; /* Keep display block */
-        }
-        #statsDisplay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-family: sans-serif;
-        }
-        #attackMenu {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            font-family: sans-serif;
-        }
-        #attackMenu h2 {
-            margin-top: 0;
-        }
-        .menu-item {
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-        }
-        .menu-item label {
-            margin-right: 10px;
-        }
-        .menu-item button {
-            padding: 8px 15px;
-            cursor: pointer;
-        }
-        #shopMenu {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            align-items: center;
-            font-family: sans-serif;
-            z-index: 10; /* Ensure it's on top of the canvas */
-        }
-        #shopMenu h2 {
-            margin-top: 0;
-        }
-        .shop-item {
-            margin-bottom: 10px;
-            padding: 10px;
-            border: 1px solid #555;
-            border-radius: 3px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 300px;
-        }
-        .shop-item-details {
-            flex-grow: 1;
-        }
-        .shop-item-stats {
-            font-size: 0.8em;
-            color: #ccc;
-        }
-        .shop-item button {
-            padding: 8px 15px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        #inventoryMenu {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 20px;
-            border-radius: 5px;
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            align-items: center;
-            font-family: sans-serif;
-            z-index: 10; /* Ensure it's on top */
-            width: 400px;
-        }
-        #inventoryMenu h2 {
-            margin-top: 0;
-        }
-        .inventory-section {
-            margin-bottom: 15px;
-            width: 100%;
-        }
-        .inventory-section h3 {
-            margin-top: 0;
-            margin-bottom: 5px;
-        }
-        .inventory-item {
-            padding: 8px;
-            border: 1px solid #555;
-            border-radius: 3px;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .inventory-item-details {
-            flex-grow: 1;
-        }
-        .inventory-item-stats {
-            font-size: 0.8em;
-            color: #ccc;
-        }
-        .inventory-item button {
-            padding: 6px 10px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        .equipped-item {
-            padding: 8px;
-            border: 1px solid #777;
-            border-radius: 3px;
-            margin-bottom: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .equipped-item-details {
-            flex-grow: 1;
-        }
-        .equipped-item button {
-            padding: 6px 10px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/styles/main.css">
 </head>
 <body>
     <div id="gameContainer" style="position: relative;">
@@ -173,7 +19,6 @@
 
     <div id="attackMenu" style="display: none;">
         <h2>Select Attack Styles</h2>
-
         <div class="menu-item">
             <label for="leftClickAttack">Left Click Attack:</label>
             <select id="leftClickAttack">
@@ -181,7 +26,6 @@
                 <option value="whipSlash">Whip Slash</option>
             </select>
         </div>
-
         <div class="menu-item">
             <label for="rightClickAttack">Right Click Attack:</label>
             <select id="rightClickAttack">
@@ -190,7 +34,6 @@
                 <option value="nova">Nova</option>
             </select>
         </div>
-
         <h3>Increase Stats</h3>
         <div class="menu-item">
             <button id="increaseStr">Increase STR</button>
@@ -204,32 +47,28 @@
             <button id="increaseInt">Increase INT</button>
             <span id="intCost"></span>
         </div>
-
-        <button id="closeMenuButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close Menu</button>
+        <button id="closeMenuButton">Close Menu</button>
     </div>
 
     <div id="shopMenu" style="display: none;">
         <h2>Shop</h2>
-        <div id="shopInventoryDisplay">
-        </div>
-        <button id="closeShopButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close Shop</button>
+        <div id="shopInventoryDisplay"></div>
+        <button id="closeShopButton">Close Shop</button>
     </div>
 
     <div id="inventoryMenu" style="display: none;">
         <h2>Inventory & Equipment</h2>
         <div class="inventory-section">
             <h3>Equipped Gear</h3>
-            <div id="equippedItemsDisplay">
-                </div>
+            <div id="equippedItemsDisplay"></div>
         </div>
         <div class="inventory-section">
             <h3>Inventory</h3>
-            <div id="inventoryItemsDisplay">
-                </div>
+            <div id="inventoryItemsDisplay"></div>
         </div>
-        <button id="closeInventoryButton" style="margin-top: 15px; padding: 8px 15px; cursor: pointer;">Close</button>
+        <button id="closeInventoryButton">Close</button>
     </div>
 
-    <script type="module" src="main.js"></script>
+    <script type="module" src="src/core/main.js"></script>
 </body>
 </html>

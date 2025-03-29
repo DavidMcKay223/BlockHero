@@ -1,6 +1,6 @@
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
-import { checkCollision } from './utils.js';
-import { player } from './player.js'; // Import player to make enemies move towards it
+import { checkCollision } from '../utils/helpers.js';
+import { player } from './player.js';
 
 export const enemies = [];
 const baseEnemySize = 50; // Define base enemy size

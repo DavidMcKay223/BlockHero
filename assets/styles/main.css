@@ -1,0 +1,82 @@
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #000; /* Background color for the game */
+}
+
+canvas {
+    display: block;
+    border: 1px solid #fff; /* Optional border for the canvas */
+}
+
+#statsDisplay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    font-family: sans-serif;
+}
+
+#attackMenu, #shopMenu, #inventoryMenu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 5px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    font-family: sans-serif;
+    z-index: 10; /* Ensure it's on top of the canvas */
+}
+
+.menu-item {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.menu-item label {
+    margin-right: 10px;
+}
+
+.menu-item button {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+.shop-item, .inventory-item, .equipped-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 300px;
+}
+
+.shop-item-details, .inventory-item-details, .equipped-item-details {
+    flex-grow: 1;
+}
+
+.shop-item-stats, .inventory-item-stats {
+    font-size: 0.8em;
+    color: #ccc;
+}
+
+.shop-item button, .inventory-item button, .equipped-item button {
+    padding: 6px 10px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.equipped-item {
+    background-color: rgba(0, 0, 0, 0.5);
+}

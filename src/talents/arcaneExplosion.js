@@ -1,7 +1,7 @@
-import { DEBUG_MODE } from '../main.js';
-import { player } from '../player.js';
-import { enemies } from '../enemy.js';
-import { canvas } from '../main.js'; // Import canvas
+import { DEBUG_MODE } from '../core/main.js';
+import { player } from '../core/player.js';
+import { enemies } from '../core/enemy.js';
+import { canvas } from '../core/main.js';
 
 let mouseX;
 let mouseY;

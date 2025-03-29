@@ -21,3 +21,19 @@ export function checkCollision(rect1, rect2) {
     }
     return closestEnemy;
 }
+
+export function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+export function lerp(start, end, t) {
+  return start + (end - start) * t;
+}
+
+export function randomRange(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+export function distance(x1, y1, x2, y2) {
+  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+}

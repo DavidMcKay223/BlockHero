@@ -1,6 +1,6 @@
-import { DEBUG_MODE } from '../main.js';
-import { enemies } from '../enemy.js';
-import { player } from '../player.js';
+import { DEBUG_MODE } from '../core/main.js';
+import { enemies } from '../core/enemy.js';
+import { player } from '../core/player.js';
 
 class RighteousFire {
     constructor(player) {

@@ -1,5 +1,5 @@
 import { player } from './player.js';
-import { canvas, gameWorldWidth, gameWorldHeight } from './main.js';
+import { canvas, gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
 
 export const camera = {
   x: 0,
