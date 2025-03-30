@@ -1,3 +1,4 @@
+import * as THREE from '../../node_modules/three/build/three.module.js';
 import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
@@ -98,5 +99,38 @@ export function drawNovaAttack(ctx) {
             ctx.arc(projectile.x, projectile.y, projectile.radius, 0, Math.PI * 2);
             ctx.fill();
         }
+    }
+}
+
+export function updateNovaAttackInScene(scene) {
+    const projectileRadius3D = novaAttack.projectileRadius / 10; // Adjust scale as needed
+
+    novaProjectiles.forEach((projectile, index) => {
+        const projectileName = `novaProjectile-${index}`;
+        let projectileObject = scene.getObjectByName(projectileName);
+
+        if (!projectileObject) {
+            const geometry = new THREE.SphereGeometry(projectileRadius3D, 16, 16);
+            const material = new THREE.MeshBasicMaterial({ color: 0xffa500 }); // Orange color
+            projectileObject = new THREE.Mesh(geometry, material);
+            projectileObject.name = projectileName;
+            scene.add(projectileObject);
+        }
+        projectileObject.position.set(projectile.x, projectile.y, 0); // Adjust z if needed
+    });
+
+    // Clean up removed projectiles from the scene
+    const sceneProjectiles = scene.children.filter(obj => obj.name.startsWith('novaProjectile-'));
+    sceneProjectiles.forEach(sceneProjectile => {
+        const projectileIndex = parseInt(sceneProjectile.name.split('-')[1]);
+        if (!novaProjectiles.some((_, index) => index === projectileIndex)) {
+            scene.remove(sceneProjectile);
+        }
+    });
+
+    if (!isNovaActive) {
+        // Clean up all projectiles when nova is no longer active
+        const sceneProjectilesToRemove = scene.children.filter(obj => obj.name.startsWith('novaProjectile-'));
+        sceneProjectilesToRemove.forEach(projectile => scene.remove(projectile));
     }
 }

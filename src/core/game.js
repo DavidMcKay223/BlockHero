@@ -1,3 +1,4 @@
+import * as THREE from '../../node_modules/three/build/three.module.js';
 import { handlePlayerInput, player, updatePlayerCooldowns } from './player.js';
 import { updateCamera, camera } from './camera.js';
 import * as hammer from '../attacks/hammer.js';
@@ -6,9 +7,10 @@ import * as chainLightning from '../attacks/chainLightning.js';
 import * as whipSlash from '../attacks/whipSlash.js';
 import * as enemy from './enemy.js';
 import * as novaAttack from '../attacks/nova.js';
-import { righteousFireInstance, DEBUG_MODE } from './main.js';
-import { drawArcaneExplosions } from '../talents/arcaneExplosion.js';
+import { righteousFireInstance, DEBUG_MODE, scene } from './main.js'; // Import scene
+// import { drawArcaneExplosions } from '../talents/arcaneExplosion.js'; // Removed import
 import { isStatBoostActive } from '../talents/statBoost.js';
+import { player as playerData } from './player.js'; // Import player data
 
 const dpsMeter = {
     damageLog: [], // Array to store { timestamp: number, damage: number }
@@ -38,23 +40,23 @@ const dpsMeter = {
     draw(ctx) {
       const now = Date.now();
       if (now - this.lastDisplayTime < this.displayDuration) {
-          this.calculateDPS();
+            this.calculateDPS();
 
-          const playerCenterX = player.x + player.width / 2;
-          const playerBottomY = player.y + player.height;
-          const textOffset = 20; // Adjust this value to control the distance below the player
+            const playerCenterX = player.x + player.width / 2;
+            const playerBottomY = player.y + player.height;
+            const textOffset = 20; // Adjust this value to control the distance below the player
 
-          const colors = ['red', 'blue', 'green', 'yellow'];
-          const randomIndex = Math.floor(Math.random() * colors.length);
-          ctx.fillStyle = colors[randomIndex];
+            const colors = ['red', 'blue', 'green', 'yellow'];
+            const randomIndex = Math.floor(Math.random() * colors.length);
+            ctx.fillStyle = colors[randomIndex];
 
-          ctx.font = '16px Arial';
-          const text = `DPS: ${Math.floor(this.currentDPS)}`;
-          const textWidth = ctx.measureText(text).width;
+            ctx.font = '16px Arial';
+            const text = `DPS: ${Math.floor(this.currentDPS)}`;
+            const textWidth = ctx.measureText(text).width;
 
-          ctx.fillText(text, playerCenterX - textWidth / 2, playerBottomY + textOffset);
-      }
-  }
+            ctx.fillText(text, playerCenterX - textWidth / 2, playerBottomY + textOffset);
+        }
+    }
 };
 
 export function update() {
@@ -66,6 +68,28 @@ export function update() {
     novaAttack.handleNovaAttack(); // Update nova attack projectiles
     updateCamera();
     hammer.updateHammers();
+
+    // Update the position of your 3D player object in the Three.js scene
+    const playerObject = scene.getObjectByName('player'); // Assuming you named your player object 'player'
+    if (playerObject) {
+        playerObject.position.set(player.x, player.y, player.z); // Adjust z if needed
+        // You might also need to update rotation based on player direction
+    }
+
+    // Update the position of your 3D enemy objects
+    enemy.enemies.forEach(enemyInstance => {
+        const enemyObject = scene.getObjectByName(`enemy-${enemyInstance.id}`); // Assuming you name enemies with an ID
+        if (enemyObject) {
+            enemyObject.position.set(enemyInstance.x, enemyInstance.y, enemyInstance.z || 0); // Adjust z if needed
+        }
+    });
+
+    // Update other 3D elements based on your game state
+    hammer.updateHammersInScene(scene); // Assuming you have this function in hammer.js
+    chainLightning.updateChainLightningInScene(scene); // Assuming you have this in chainLightning.js
+    whipSlash.updateWhipSlashInScene(scene); // Assuming you have this in whipSlash.js
+    novaAttack.updateNovaAttackInScene(scene); // Assuming you have this in novaAttack.js
+    updateArcaneExplosionsInScene(scene); // Assuming you have this function below
 }
 
 export function draw(ctx) {
@@ -129,12 +153,42 @@ export function draw(ctx) {
     chainLightning.drawChainLightning(ctx);
     whipSlash.drawWhipSlash(ctx);
     novaAttack.drawNovaAttack(ctx);
-    drawArcaneExplosions(ctx); // Call drawArcaneExplosions
+    // drawArcaneExplosions(ctx); // Removed call to the 2D drawing function
 
     // Draw the DPS meter
     dpsMeter.draw(ctx);
 
     ctx.restore(); // Restore the camera translation
+}
+
+// Helper function to update Arcane Explosions in the 3D scene
+function updateArcaneExplosionsInScene(scene) {
+    if (playerData.arcaneExplosionOrbs && playerData.arcaneExplosionOrbs.length > 0) {
+        playerData.arcaneExplosionOrbs.forEach(orb => {
+            let explosionObject = scene.getObjectByName(`arcaneExplosion-${orb.id}`);
+
+            if (!explosionObject) {
+                // Create a 3D representation for the explosion
+                const geometry = new THREE.SphereGeometry(orb.radius, 32, 32); // Example: Sphere
+                const material = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 }); // Cyan, semi-transparent
+                explosionObject = new THREE.Mesh(geometry, material);
+                explosionObject.name = `arcaneExplosion-${orb.id}`;
+                explosionObject.position.set(orb.x, orb.y, orb.z); // Adjust z
+                scene.add(explosionObject);
+            } else {
+                // Update the existing explosion (e.g., size, opacity over time)
+                // Assuming initialRadius is defined elsewhere or you can calculate it
+                const initialRadius = 5; // Example initial radius
+                explosionObject.scale.set(orb.radius / initialRadius, orb.radius / initialRadius, orb.radius / initialRadius); // Example scaling
+                explosionObject.material.opacity = orb.opacity; // Example opacity change
+            }
+
+            // You might need to handle the removal of explosions when they are finished
+            // if (orb.isFinished && explosionObject) {
+            //     scene.remove(explosionObject);
+            // }
+        });
+    }
 }
 
 export { handlePlayerInput, player, updatePlayerCooldowns, updateCamera, camera, dpsMeter };

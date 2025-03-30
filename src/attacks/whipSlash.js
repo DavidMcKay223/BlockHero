@@ -1,3 +1,4 @@
+import * as THREE from '../../node_modules/three/build/three.module.js';
 import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
@@ -79,5 +80,29 @@ export function drawWhipSlash(ctx) {
         ctx.moveTo(player.x + player.width, player.y + player.height / 2);
         ctx.lineTo(player.x + player.width + whipSlashAttack.range, player.y + player.height / 2);
         ctx.stroke();
+    }
+}
+
+export function updateWhipSlashInScene(scene) {
+    const whipName = 'whipSlash';
+    let whipObject = scene.getObjectByName(whipName);
+
+    if (isWhipSlashActive) {
+        const startPoint = new THREE.Vector3(player.x + player.width, player.y + player.height / 2, 0);
+        const endPoint = new THREE.Vector3(player.x + player.width + whipSlashAttack.range, player.y + player.height / 2, 0);
+        const points = [startPoint, endPoint];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: 0x800080, linewidth: 10 }); // Purple color
+
+        if (!whipObject) {
+            whipObject = new THREE.Line(geometry, material);
+            whipObject.name = whipName;
+            scene.add(whipObject);
+        } else {
+            whipObject.geometry.setFromPoints(points);
+            whipObject.geometry.needsUpdate = true;
+        }
+    } else if (whipObject) {
+        scene.remove(whipObject);
     }
 }

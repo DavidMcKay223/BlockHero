@@ -1,17 +1,18 @@
-import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
+import * as THREE from '../../node_modules/three/build/three.module.js';
+import { gameWorldWidth, gameWorldHeight, DEBUG_MODE, scene } from './main.js'; // Import THREE and scene
 import { checkCollision } from '../utils/helpers.js';
 import { player } from './player.js';
 
 export const enemies = [];
-const baseEnemySize = 50; // Define base enemy size
-
+let nextEnemyId = 0; // To give each enemy a unique ID
+const baseEnemySize = .5; // Increased base enemy size
 // Define different enemy types
 const enemyTypes = [
     {
         name: 'Basic Block',
         color: 'red',
         baseHealth: 1000,
-        speed: 1,
+        speed: 0.01, // Adjust speed for 3D world units
         movementPattern: 'random', // 'random', 'chase'
         sizeRatio: 1,
         moneyWorth: 25,
@@ -21,7 +22,7 @@ const enemyTypes = [
         name: 'Fast Block',
         color: 'orange',
         baseHealth: 750,
-        speed: 2,
+        speed: 0.02,
         movementPattern: 'chase',
         sizeRatio: 0.8,
         moneyWorth: 35,
@@ -31,7 +32,7 @@ const enemyTypes = [
         name: 'Tank Block',
         color: 'brown',
         baseHealth: 1500,
-        speed: 0.5,
+        speed: 0.005,
         movementPattern: 'random',
         sizeRatio: 1.2,
         moneyWorth: 50,
@@ -41,7 +42,7 @@ const enemyTypes = [
         name: 'Green Goo',
         color: 'green',
         baseHealth: 900,
-        speed: 1.5,
+        speed: 0.015,
         movementPattern: 'chase',
         sizeRatio: 1,
         moneyWorth: 40,
@@ -75,11 +76,17 @@ export function spawnEnemy(options) {
     const blockType = options?.blockType !== undefined ? options.blockType : randomEnemyType.blockType;
 
     const spawnedEnemySize = baseEnemySize * sizeRatio;
+    const enemyId = nextEnemyId++;
 
+    let x, y;
     do {
+        x = Math.random() * (gameWorldWidth - spawnedEnemySize);
+        y = Math.random() * (gameWorldHeight - spawnedEnemySize);
         newEnemy = {
-            x: Math.random() * (gameWorldWidth - spawnedEnemySize),
-            y: Math.random() * (gameWorldHeight - spawnedEnemySize),
+            id: enemyId,
+            x: x,
+            y: y,
+            z: 0, // Added z position
             width: spawnedEnemySize,
             height: spawnedEnemySize,
             color: randomEnemyType.color, // Default color from enemy type
@@ -108,8 +115,23 @@ export function spawnEnemy(options) {
 
     enemies.push(newEnemy);
     if (DEBUG_MODE) {
-        console.log("Spawned enemy:", newEnemy); // Add this line
+        console.log("Spawned enemy:", newEnemy);
     }
+
+    // Create 3D object for the enemy
+    let geometry;
+    if (blockType.includes('block')) {
+        geometry = new THREE.BoxGeometry(spawnedEnemySize, spawnedEnemySize, spawnedEnemySize);
+    } else if (blockType.includes('gooey')) {
+        geometry = new THREE.SphereGeometry(spawnedEnemySize / 2, 32, 32); // Adjust radius for sphere
+    } else {
+        geometry = new THREE.BoxGeometry(spawnedEnemySize, spawnedEnemySize, spawnedEnemySize); // Default to block
+    }
+    const material = new THREE.MeshBasicMaterial({ color: new THREE.Color(randomEnemyType.color) });
+    const enemyMesh = new THREE.Mesh(geometry, material);
+    enemyMesh.position.set(newEnemy.x + spawnedEnemySize / 2 - gameWorldWidth / 2, newEnemy.y + spawnedEnemySize / 2 - gameWorldHeight / 2, 0); // Adjust position to center and world origin
+    enemyMesh.name = `enemy-${enemyId}`; // Give it a unique name
+    scene.add(enemyMesh);
 }
 
 export function updateEnemies() {
@@ -137,7 +159,7 @@ export function updateEnemies() {
             enemy.y += Math.sin(angle) * enemy.speed;
         }
 
-        // Change color based on health
+        // Change color based on health (for 2D representation - might remove later)
         const healthPercentage = enemy.health / enemy.maxHealth;
         if (healthPercentage > 0.7) {
             enemy.color = enemy.baseColor; // Full health, use base color
@@ -146,39 +168,24 @@ export function updateEnemies() {
         } else {
             enemy.color = 'darkred'; // Critical health
         }
+
+        // Update 3D object position
+        const enemyObject = scene.getObjectByName(`enemy-${enemy.id}`);
+        if (enemyObject) {
+            enemyObject.position.set(enemy.x + enemy.width / 2 - gameWorldWidth / 2, enemy.y + enemy.height / 2 - gameWorldHeight / 2, 0);
+        }
     }
 }
 
-export function drawEnemies(ctx) {
-    const healthBarWidth = 60;
-    const healthBarHeight = 10;
-    const healthBarOffsetY = 15;
+// Removed drawEnemies function
 
-    for (const enemy of enemies) {
-        if (enemy.health > 0) {
-            ctx.fillStyle = enemy.color;
-            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-
-            // Draw health bar
-            const healthBarX = enemy.x + (enemy.width - healthBarWidth) / 2;
-            const healthBarY = enemy.y - healthBarOffsetY;
-
-            ctx.fillStyle = 'gray';
-            ctx.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
-
-            ctx.fillStyle = 'green';
-            const healthPercentage = enemy.health / enemy.maxHealth;
-            const currentHealthBarWidth = healthPercentage * healthBarWidth;
-            ctx.fillRect(healthBarX, healthBarY, currentHealthBarWidth, healthBarHeight);
-
-            if (enemy.isBurning) {
-                ctx.strokeStyle = 'orange'; // Or another bright color
-                ctx.lineWidth = 5;
-                ctx.strokeRect(enemy.x, enemy.y, enemy.width, enemy.height);
-            }
-
-            // You could add logic here to draw different "block types"
-            // For example, if enemy.blockType === 'gooey_green', draw a different shape or texture
+export function removeEnemy(enemyToRemove) {
+    const index = enemies.indexOf(enemyToRemove);
+    if (index > -1) {
+        enemies.splice(index, 1);
+        const enemyObject = scene.getObjectByName(`enemy-${enemyToRemove.id}`);
+        if (enemyObject) {
+            scene.remove(enemyObject);
         }
     }
 }

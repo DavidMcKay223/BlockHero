@@ -1,19 +1,33 @@
+import * as THREE from '../../node_modules/three/build/three.module.js';
 import { player } from './player.js';
-import { canvas, gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
 
-export const camera = {
-  x: 0,
-  y: 0,
-  width: 1200,
-  height: 700
-};
+// Create a 3D Perspective Camera
+const fov = 75; // Field of view
+const aspect = window.innerWidth / window.innerHeight; // Aspect ratio
+const near = 0.1; // Near clipping plane
+const far = 1000; // Far clipping plane
+export const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+
+// Initial camera position (adjust as needed)
+camera.position.set(0, 5, 10); // Example: Slightly above and behind the origin
+camera.lookAt(0, 0, 0); // Initially look at the origin
 
 export function updateCamera() {
-  camera.x = player.x - camera.width / 2;
-  camera.y = player.y - camera.height / 2;
+    // Example: Follow the player with a fixed offset
+    const offsetX = 0;
+    const offsetY = 5;
+    const offsetZ = 10;
 
-  if (camera.x < 0) camera.x = 0;
-  if (camera.y < 0) camera.y = 0;
-  if (camera.x > gameWorldWidth - camera.width) camera.x = gameWorldWidth - camera.width;
-  if (camera.y > gameWorldHeight - camera.height) camera.y = gameWorldHeight - camera.height;
+    camera.position.x = player.x + offsetX;
+    camera.position.y = player.y + offsetY;
+    camera.position.z = player.z + offsetZ; // Assuming your player has a z position now
+
+    // Make the camera look at the player (you might adjust the target offset)
+    camera.lookAt(player.x, player.y + 1, player.z); // Look slightly above the player
+}
+
+// You'll likely need to call this function when the window resizes in your renderer
+export function updateCameraAspect() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 }

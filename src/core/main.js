@@ -1,6 +1,8 @@
+import * as THREE from '../../node_modules/three/build/three.module.js';
+
 import { update, draw } from './game.js';
 import { player, handlePlayerInput, updatePlayerCooldowns, initiateAttack } from './player.js';
-import { spawnEnemy, enemies, updateEnemies, drawEnemies } from './enemy.js';
+import { spawnEnemy, enemies, updateEnemies } from './enemy.js'; // Removed drawEnemies import
 import RighteousFire from '../talents/righteousFire.js';
 import { updateArcaneExplosions, performArcaneExplosion } from '../talents/arcaneExplosion.js';
 import { toggleMenu } from '../components/menu.js';
@@ -10,43 +12,28 @@ import { updateStatDisplay } from '../components/stats.js';
 import { activateStatBoost, updateStatBoost } from '../talents/statBoost.js';
 import { activateKillAllSplit, updateKillAllSplitCooldown } from '../talents/killAllSplit.js';
 
+// Import your Three.js modules
+import { scene } from './scene.js';
+import { renderer, startRendering } from './renderer.js';
+import { camera, updateCamera, updateCameraAspect } from './camera.js';
+
 export const DEBUG_MODE = false;
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+// const canvas = document.getElementById('gameCanvas'); // Removed 2D canvas reference
+// const ctx = canvas.getContext('2d'); // Removed 2D context reference
 
-export const gameWorldWidth = 1200;
-export const gameWorldHeight = 700;
+// Game World Dimensions (These might need to be in world units now)
+export const gameWorldWidth = 50;
+export const gameWorldHeight = 30;
 
-export { canvas, ctx };
-
-canvas.width = gameWorldWidth;
-canvas.height = gameWorldHeight;
-
-player.y = canvas.height / 2 - 25;
+// Initial player position in the 3D world (centered)
+player.x = 0;
+player.y = 0;
+// playerMesh.position.set(player.x, player.y, player.z); // Removed this line, as playerMesh is not yet defined here
 
 let mouseX = 0;
 let mouseY = 0;
 
-canvas.addEventListener('mousemove', (event) => {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = event.clientX - rect.left;
-    mouseY = event.clientY - rect.top;
-});
-
-canvas.addEventListener('mousedown', (event) => {
-    if (DEBUG_MODE) console.log('mousedown event - button:', event.button, 'clientX:', event.button, 'clientX:', event.clientY);
-    initiateAttack(event.button);
-    event.preventDefault(); // keep this to prevent default browser behavior.  Important for contextmenu
-});
-
-canvas.addEventListener('mouseup', (event) => {
-    if (DEBUG_MODE) console.log('mouseup event - button:', event.button, 'clientX:', event.clientX, 'clientY:', event.clientY);
-});
-
-canvas.addEventListener('contextmenu', (event) => {
-    event.preventDefault(); // Prevent the default context menu
-    initiateAttack(2); // Explicitly call initiateAttack with button 2 (right-click)
-});
+// Removed event listeners related to the 2D canvas
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'm' || event.key === 'M') {
@@ -62,7 +49,7 @@ document.addEventListener('keydown', (event) => {
             righteousFireInstance.activate();
         }
     } else if (event.key === '2') {
-        performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, canvas);
+        performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, null); // Removed canvas reference
     } else if (event.key === '3') {
         activateStatBoost();
     } else if (event.key === '4') {
@@ -73,12 +60,28 @@ document.addEventListener('keydown', (event) => {
 const initialEnemyCount = 5;
 const respawnEnemyCount = 5;
 
+// Export playerMesh so it can be accessed in game.js
+export let playerMesh;
+
 function init() {
     updateStatDisplay();
+    startRendering(); // Initialize and start the Three.js renderer
+
+    // Create a 3D cube for the player
+    const playerGeometry = new THREE.BoxGeometry(player.width, player.height, 0.5); // Adjusted Z-dimension to 0.5 to match width/height
+    const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue color (0x0000ff)
+    playerMesh = new THREE.Mesh(playerGeometry, playerMaterial); // Assign to the exported variable
+    playerMesh.name = 'player'; // Set the name to 'player'
+
+    // Set initial position based on your 2D player's starting position
+    playerMesh.position.set(player.x, player.y, 0); // Adjust z as needed
+
+    scene.add(playerMesh); // Add the player cube to the scene
 }
 
 async function gameLoop() {
-    update();
+    update(); // Your existing update logic
+
     updateEnemies();
 
     if (player.arcaneExplosionOrbs && player.arcaneExplosionOrbs.length > 0) {
@@ -86,8 +89,8 @@ async function gameLoop() {
         await arcaneExplosionModule.updateArcaneExplosions(player.arcaneExplosionOrbs);
     }
 
-    draw(ctx);
-    drawEnemies(ctx);
+    // Removed draw(ctx) call
+    // Removed drawEnemies(ctx) call
 
     if (player.killCount >= player.killsForNextLevel) {
         player.playerLevel++;
@@ -113,6 +116,9 @@ async function gameLoop() {
     updatePlayerCooldowns();
     updateStatBoost();
     updateKillAllSplitCooldown();
+
+    updateCamera(); // Update the 3D camera position
+    renderer.render(scene, camera); // Render the 3D scene
     requestAnimationFrame(gameLoop);
 }
 
@@ -120,3 +126,13 @@ export const righteousFireInstance = new RighteousFire(player);
 
 window.onload = init;
 gameLoop();
+
+// Handle window resize for the Three.js renderer and camera
+window.addEventListener('resize', () => {
+    updateCameraAspect(); // Update the camera's aspect ratio
+    const newWidth = window.innerWidth;
+    const newHeight = window.innerHeight;
+    renderer.setSize(newWidth, newHeight);
+});
+
+export { scene, camera, renderer }; // Export these if other modules need direct access

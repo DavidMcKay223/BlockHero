@@ -1,4 +1,4 @@
-import { canvas, gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
+import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from './main.js';
 import * as punch from '../attacks/punch.js';
 import * as hammer from '../attacks/hammer.js';
 import * as chainLightning from '../attacks/chainLightning.js';
@@ -6,12 +6,13 @@ import * as whipSlash from '../attacks/whipSlash.js';
 import * as novaAttack from '../attacks/nova.js';
 
 export const player = {
-    x: 50,
-    y: 0,
-    width: 50,
-    height: 50,
+    x: 0, // Initial X position at origin
+    y: 0, // Initial Y position at origin
+    z: 0, // Initial Z position
+    width: 0.5, // Adjust width for 3D world units
+    height: 0.5, // Adjust height for 3D world units
     color: 'blue',
-    speed: 5,
+    speed: 0.05, // Adjust speed for 3D world units
     isAttacking: false,
     attackTimer: 0,
     attackDuration: 20,
@@ -62,7 +63,7 @@ document.addEventListener('keydown', (event) => {
     keys[event.key] = true;
     if (event.key === '2' && player.selectedNumber2Talent === 'arcaneExplosion' && player.canArcaneExplosion) {
         import('../talents/arcaneExplosion.js').then(module => {
-            module.performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2); // Pass player position
+            module.performArcaneExplosion(player.x, player.y, player.z); // Pass player position including z
             player.canArcaneExplosion = false;
             player.arcaneExplosionTimer = player.arcaneExplosionCooldown;
             if (DEBUG_MODE) console.log("Arcane Explosion initiated!");
@@ -77,29 +78,18 @@ document.addEventListener('keyup', (event) => {
 export function handlePlayerInput() {
     let newPlayerX = player.x;
     let newPlayerY = player.y;
+    let newPlayerZ = player.z;
 
-    if (keys['w'] || keys['W'] || keys['ArrowUp']) newPlayerY -= player.speed;
-    if (keys['s'] || keys['S'] || keys['ArrowDown']) newPlayerY += player.speed;
+    if (keys['w'] || keys['W'] || keys['ArrowUp']) newPlayerY += player.speed; // In 3D, positive Y is often "up" in world coordinates
+    if (keys['s'] || keys['S'] || keys['ArrowDown']) newPlayerY -= player.speed;
     if (keys['a'] || keys['A'] || keys['ArrowLeft']) newPlayerX -= player.speed;
     if (keys['d'] || keys['D'] || keys['ArrowRight']) newPlayerX += player.speed;
+    if (keys[' '] || keys['Spacebar']) newPlayerZ += player.speed; // Spacebar for moving "up" in Z
+    if (keys['Shift']) newPlayerZ -= player.speed; // Shift for moving "down" in Z
 
-    // Horizontal wrapping
-    if (newPlayerX < 0) {
-        player.x = gameWorldWidth - player.width;
-    } else if (newPlayerX > gameWorldWidth - player.width) {
-        player.x = 0;
-    } else {
-        player.x = newPlayerX;
-    }
-
-    // Vertical wrapping
-    if (newPlayerY < 0) {
-        player.y = gameWorldHeight - player.height;
-    } else if (newPlayerY > gameWorldHeight - player.height) {
-        player.y = 0;
-    } else {
-        player.y = newPlayerY;
-    }
+    player.x = newPlayerX;
+    player.y = newPlayerY;
+    player.z = newPlayerZ;
 }
 
 export function initiateAttack(button) {
@@ -113,25 +103,25 @@ export function initiateAttack(button) {
             if (DEBUG_MODE) console.log('Left click attack initiated - player.isAttacking:', player.isAttacking, 'Attack Move:', player.attackMove);
         } else if (player.selectedLeftClickAttack === 'whipSlash' && player.canWhipSlash) { // Check cooldown
             if (DEBUG_MODE) console.log('Initiating Whip Slash');
-            whipSlash.performWhipSlash();
+            whipSlash.performWhipSlash(player.x, player.y, player.z); // Pass player position
             player.canWhipSlash = false;
             player.whipSlashTimer = player.whipSlashCooldown;
         }
         // Add logic for other left-click attacks if needed
     } else if (button === 2) { // Right click
         if (player.selectedRightClickAttack === 'hammer' && player.canThrowHammer) {
-            hammer.throwHammers();
+            hammer.throwHammers(player.x, player.y, player.z); // Pass player position
             player.canThrowHammer = false;
             player.hammerThrowTimer = player.hammerThrowCooldown;
             if (DEBUG_MODE) console.log('Right click attack initiated - player.canThrowHammer:', player.canThrowHammer, 'Attack Move:', player.attackMove);
         } else if (player.selectedRightClickAttack === 'chainLightning' && player.canChainLightning) {
             if (DEBUG_MODE) console.log('Initiating Chain Lightning');
-            chainLightning.performChainLightning();
+            chainLightning.performChainLightning(player.x, player.y, player.z); // Pass player position
             player.canChainLightning = false;
             player.chainLightningTimer = player.chainLightningCooldown;
         } else if (player.selectedRightClickAttack === 'nova' && player.canNovaAttack) {
             if (DEBUG_MODE) console.log('Initiating Nova Attack');
-            novaAttack.performNovaAttack();
+            novaAttack.performNovaAttack(player.x, player.y, player.z); // Pass player position
             player.canNovaAttack = false;
             player.novaAttackTimer = player.novaAttackCooldown;
         }
