@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependency directories
+node_modules/
+pnpm-lock.yaml # If using pnpm
+yarn.lock # If using Yarn
+
+# Optional build outputs
+dist/
+build/
+out/
+.parcel-cache/ # If using Parcel
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.development.local
+.env.test
+.env.test.local
+.env.production
+.env.production.local
+
+# Editor and IDE specific files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Temporary files and directories
+tmp/
+temp/
+__pycache__/ # For Python if you use it
+
+# OS specific files
+.DS_Store # macOS
+Thumbs.db # Windows
