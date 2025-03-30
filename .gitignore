@@ -39,6 +39,7 @@ out/
 tmp/
 temp/
 __pycache__/ # For Python if you use it
+.parcel-cache/
 
 # OS specific files
 .DS_Store # macOS

@@ -14,26 +14,19 @@ import { activateKillAllSplit, updateKillAllSplitCooldown } from '../talents/kil
 
 // Import your Three.js modules
 import { scene } from './scene.js';
-import { renderer, startRendering } from './renderer.js';
-import { camera, updateCamera, updateCameraAspect } from './camera.js';
+import { startRendering } from './renderer.js'; // Import startRendering
+import { camera, updateCamera, updateCameraAspect, initControls } from './camera.js'; // Import initControls
 
 export const DEBUG_MODE = false;
-// const canvas = document.getElementById('gameCanvas'); // Removed 2D canvas reference
-// const ctx = canvas.getContext('2d'); // Removed 2D context reference
 
-// Game World Dimensions (These might need to be in world units now)
 export const gameWorldWidth = 50;
 export const gameWorldHeight = 30;
 
-// Initial player position in the 3D world (centered)
 player.x = 0;
 player.y = 0;
-// playerMesh.position.set(player.x, player.y, player.z); // Removed this line, as playerMesh is not yet defined here
 
 let mouseX = 0;
 let mouseY = 0;
-
-// Removed event listeners related to the 2D canvas
 
 document.addEventListener('keydown', (event) => {
     if (event.key === 'm' || event.key === 'M') {
@@ -49,7 +42,7 @@ document.addEventListener('keydown', (event) => {
             righteousFireInstance.activate();
         }
     } else if (event.key === '2') {
-        performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, null); // Removed canvas reference
+        performArcaneExplosion(player.x + player.width / 2, player.y + player.height / 2, null);
     } else if (event.key === '3') {
         activateStatBoost();
     } else if (event.key === '4') {
@@ -60,27 +53,28 @@ document.addEventListener('keydown', (event) => {
 const initialEnemyCount = 5;
 const respawnEnemyCount = 5;
 
-// Export playerMesh so it can be accessed in game.js
 export let playerMesh;
 
 function init() {
     updateStatDisplay();
     startRendering(); // Initialize and start the Three.js renderer
+    initControls();   // Initialize OrbitControls after the renderer is set up
 
     // Create a 3D cube for the player
-    const playerGeometry = new THREE.BoxGeometry(player.width, player.height, 0.5); // Adjusted Z-dimension to 0.5 to match width/height
-    const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue color (0x0000ff)
-    playerMesh = new THREE.Mesh(playerGeometry, playerMaterial); // Assign to the exported variable
-    playerMesh.name = 'player'; // Set the name to 'player'
+    const playerGeometry = new THREE.BoxGeometry(player.width, player.height, 0.5);
+    const playerMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+    playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
+    playerMesh.name = 'player';
 
-    // Set initial position based on your 2D player's starting position
-    playerMesh.position.set(player.x, player.y, 0); // Adjust z as needed
+    playerMesh.position.set(player.x, player.y, 0);
 
-    scene.add(playerMesh); // Add the player cube to the scene
+    scene.add(playerMesh);
 }
 
 async function gameLoop() {
-    update(); // Your existing update logic
+    handlePlayerInput();
+
+    update();
 
     updateEnemies();
 
@@ -89,14 +83,10 @@ async function gameLoop() {
         await arcaneExplosionModule.updateArcaneExplosions(player.arcaneExplosionOrbs);
     }
 
-    // Removed draw(ctx) call
-    // Removed drawEnemies(ctx) call
-
     if (player.killCount >= player.killsForNextLevel) {
         player.playerLevel++;
         player.killsForNextLevel *= 2;
         console.log(`Player leveled up! Now level ${player.playerLevel}`);
-        // Shop inventory will be regenerated when the shop is opened
     }
 
     if (enemies.length === 0) {
@@ -118,8 +108,8 @@ async function gameLoop() {
     updateKillAllSplitCooldown();
 
     updateCamera(); // Update the 3D camera position
-    renderer.render(scene, camera); // Render the 3D scene
-    requestAnimationFrame(gameLoop);
+    // renderer.render(scene, camera); // Rendering is now handled in renderer.js
+    // requestAnimationFrame(gameLoop); // RequestAnimationFrame is now likely handled in renderer.js
 }
 
 export const righteousFireInstance = new RighteousFire(player);
@@ -127,12 +117,8 @@ export const righteousFireInstance = new RighteousFire(player);
 window.onload = init;
 gameLoop();
 
-// Handle window resize for the Three.js renderer and camera
 window.addEventListener('resize', () => {
-    updateCameraAspect(); // Update the camera's aspect ratio
-    const newWidth = window.innerWidth;
-    const newHeight = window.innerHeight;
-    renderer.setSize(newWidth, newHeight);
+    updateCameraAspect();
 });
 
-export { scene, camera, renderer }; // Export these if other modules need direct access
+export { scene, camera };
