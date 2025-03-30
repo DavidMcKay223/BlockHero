@@ -5,7 +5,7 @@ import { player } from './player.js';
 
 export const enemies = [];
 let nextEnemyId = 0; // To give each enemy a unique ID
-const baseEnemySize = .5; // Increased base enemy size
+const baseEnemySize = 0.5; // Increased base enemy size
 // Define different enemy types
 const enemyTypes = [
     {
@@ -86,7 +86,7 @@ export function spawnEnemy(options) {
             id: enemyId,
             x: x,
             y: y,
-            z: 0, // Added z position
+            z: 0, // Initial z position
             width: spawnedEnemySize,
             height: spawnedEnemySize,
             color: randomEnemyType.color, // Default color from enemy type
@@ -129,7 +129,7 @@ export function spawnEnemy(options) {
     }
     const material = new THREE.MeshBasicMaterial({ color: new THREE.Color(randomEnemyType.color) });
     const enemyMesh = new THREE.Mesh(geometry, material);
-    enemyMesh.position.set(newEnemy.x + spawnedEnemySize / 2 - gameWorldWidth / 2, newEnemy.y + spawnedEnemySize / 2 - gameWorldHeight / 2, 0); // Adjust position to center and world origin
+    enemyMesh.position.set(newEnemy.x + spawnedEnemySize / 2 - gameWorldWidth / 2, newEnemy.y + spawnedEnemySize / 2 - gameWorldHeight / 2, newEnemy.z); // Set initial z position
     enemyMesh.name = `enemy-${enemyId}`; // Give it a unique name
     scene.add(enemyMesh);
 }
@@ -137,7 +137,7 @@ export function spawnEnemy(options) {
 export function updateEnemies() {
     for (const enemy of enemies) {
         if (enemy.movementPattern === 'random') {
-            // Simple random movement
+            // Simple random movement in X and Y
             if (Math.random() < 0.02) { // Small chance to change direction
                 enemy.vx = (Math.random() - 0.5) * enemy.speed;
                 enemy.vy = (Math.random() - 0.5) * enemy.speed;
@@ -145,18 +145,33 @@ export function updateEnemies() {
             enemy.x += enemy.vx || 0;
             enemy.y += enemy.vy || 0;
 
-            // Keep enemies within the game bounds
+            // Keep enemies within the game bounds (for X and Y)
             if (enemy.x < 0) enemy.x = 0;
             if (enemy.y < 0) enemy.y = 0;
             if (enemy.x > gameWorldWidth - enemy.width) enemy.x = gameWorldWidth - enemy.width;
             if (enemy.y > gameWorldHeight - enemy.height) enemy.y = gameWorldHeight - enemy.height;
+
+            // Random movement in Z
+            if (Math.random() < 0.01) { // Even smaller chance to change Z direction
+                enemy.vz = (Math.random() - 0.5) * enemy.speed * 0.5; // Slower Z movement
+            }
+            enemy.z += enemy.vz || 0;
+            // You might want to define bounds for Z as well, depending on your game world
+            // Example: if (enemy.z < -5) enemy.z = -5; if (enemy.z > 5) enemy.z = 5;
+
         } else if (enemy.movementPattern === 'chase') {
-            // Move towards the player
+            // Move towards the player in X and Y
             const dx = player.x - enemy.x;
             const dy = player.y - enemy.y;
             const angle = Math.atan2(dy, dx);
             enemy.x += Math.cos(angle) * enemy.speed;
             enemy.y += Math.sin(angle) * enemy.speed;
+
+            // Optionally, make them chase in Z as well
+            const dz = player.z - enemy.z;
+            if (Math.abs(dz) > 0.1) {
+                enemy.z += Math.sign(dz) * enemy.speed * 0.3; // Even slower Z chase
+            }
         }
 
         // Change color based on health (for 2D representation - might remove later)
@@ -172,7 +187,7 @@ export function updateEnemies() {
         // Update 3D object position
         const enemyObject = scene.getObjectByName(`enemy-${enemy.id}`);
         if (enemyObject) {
-            enemyObject.position.set(enemy.x + enemy.width / 2 - gameWorldWidth / 2, enemy.y + enemy.height / 2 - gameWorldHeight / 2, 0);
+            enemyObject.position.set(enemy.x + enemy.width / 2 - gameWorldWidth / 2, enemy.y + enemy.height / 2 - gameWorldHeight / 2, enemy.z); // Update Z position
         }
     }
 }
