@@ -141,7 +141,9 @@ export function spawnEnemy(options) {
 }
 
 export function updateEnemies() {
-    for (const enemy of enemies) {
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const enemy = enemies[i];
+
         if (enemy.movementPattern === 'random') {
             // Simple random movement in X and Y
             if (Math.random() < 0.02) {
@@ -186,6 +188,12 @@ export function updateEnemies() {
             enemy.color = 'yellow';
         } else {
             enemy.color = 'darkred';
+        }
+
+        // Check if the enemy is dead
+        if (enemy.health <= 0) {
+            removeEnemy(enemy); // Remove enemy from the scene and array
+            continue;
         }
 
         // Update 3D object position
