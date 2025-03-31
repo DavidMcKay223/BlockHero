@@ -103,34 +103,26 @@ export function drawNovaAttack(ctx) {
 }
 
 export function updateNovaAttackInScene(scene) {
-    const projectileRadius3D = novaAttack.projectileRadius / 10; // Adjust scale as needed
-
     novaProjectiles.forEach((projectile, index) => {
         const projectileName = `novaProjectile-${index}`;
         let projectileObject = scene.getObjectByName(projectileName);
 
         if (!projectileObject) {
-            const geometry = new THREE.SphereGeometry(projectileRadius3D, 16, 16);
+            const geometry = new THREE.SphereGeometry(0.5, 16, 16); // Adjust size as needed
             const material = new THREE.MeshBasicMaterial({ color: 0xffa500 }); // Orange color
             projectileObject = new THREE.Mesh(geometry, material);
             projectileObject.name = projectileName;
             scene.add(projectileObject);
         }
-        projectileObject.position.set(projectile.x, projectile.y, 0); // Adjust z if needed
+        projectileObject.position.set(projectile.x, projectile.y, projectile.z);
     });
 
-    // Clean up removed projectiles from the scene
+    // Remove projectiles that are no longer active
     const sceneProjectiles = scene.children.filter(obj => obj.name.startsWith('novaProjectile-'));
     sceneProjectiles.forEach(sceneProjectile => {
         const projectileIndex = parseInt(sceneProjectile.name.split('-')[1]);
-        if (!novaProjectiles.some((_, index) => index === projectileIndex)) {
+        if (!novaProjectiles[projectileIndex]) {
             scene.remove(sceneProjectile);
         }
     });
-
-    if (!isNovaActive) {
-        // Clean up all projectiles when nova is no longer active
-        const sceneProjectilesToRemove = scene.children.filter(obj => obj.name.startsWith('novaProjectile-'));
-        sceneProjectilesToRemove.forEach(projectile => scene.remove(projectile));
-    }
 }

@@ -77,24 +77,23 @@ document.addEventListener('keyup', (event) => {
 });
 
 export function handlePlayerInput() {
-    if (!playerMesh) return; // Ensure playerMesh exists
+    if (!playerMesh) return;
 
-    let moveX = 0;
-    let moveY = 0;
-    let moveZ = 0;
+    let moveX = 0, moveY = 0, moveZ = 0;
 
-    if (keys['w'] || keys['W'] || keys['ArrowUp']) moveY += player.speed; // Forward/Up (in typical 3D world Y)
-    if (keys['s'] || keys['S'] || keys['ArrowDown']) moveY -= player.speed; // Backward/Down
-    if (keys['a'] || keys['A'] || keys['ArrowLeft']) moveX -= player.speed; // Left
-    if (keys['d'] || keys['D'] || keys['ArrowRight']) moveX += player.speed; // Right
-    if (keys[' '] || keys['Spacebar']) moveZ += player.speed; // Up (in typical 3D world Z)
-    if (keys['Shift']) moveZ -= player.speed; // Down
+    if (keys['w'] || keys['ArrowUp']) moveY += player.speed;
+    if (keys['s'] || keys['ArrowDown']) moveY -= player.speed;
+    if (keys['a'] || keys['ArrowLeft']) moveX -= player.speed;
+    if (keys['d'] || keys['ArrowRight']) moveX += player.speed;
+    if (keys[' '] || keys['Spacebar']) moveZ += player.speed; // Move up
+    if (keys['Shift']) moveZ -= player.speed; // Move down
 
+    // Update playerMesh position
     playerMesh.position.x += moveX;
     playerMesh.position.y += moveY;
     playerMesh.position.z += moveZ;
 
-    // Keep the player's logical x, y, z updated with the mesh's position
+    // Sync logical position with mesh
     player.x = playerMesh.position.x;
     player.y = playerMesh.position.y;
     player.z = playerMesh.position.z;
@@ -120,9 +119,7 @@ export function initiateAttack(button) {
         if (player.selectedLeftClickAttack === 'punch') {
             if (DEBUG_MODE) console.log('Before setting isAttacking to true (Punch):', player.isAttacking);
             player.isAttacking = true;
-            player.attackMove = 'punch';
-            player.attackTimer = player.attackDuration;
-            punch.handlePunchAttack(player.x, player.y, player.z); // Pass player's 3D position
+            punch.handlePunchAttack(playerMesh); // Pass the player mesh
             if (DEBUG_MODE) console.log('Left click attack initiated - player.isAttacking:', player.isAttacking, 'Attack Move:', player.attackMove);
         } else if (player.selectedLeftClickAttack === 'whipSlash' && player.canWhipSlash) { // Check cooldown
             if (DEBUG_MODE) console.log('Initiating Whip Slash');
@@ -133,7 +130,7 @@ export function initiateAttack(button) {
         // Add logic for other left-click attacks if needed
     } else if (button === 2) { // Right click
         if (player.selectedRightClickAttack === 'hammer' && player.canThrowHammer) {
-            hammer.throwHammers(player.x, player.y, player.z); // Pass player's 3D position
+            hammer.throwHammers(playerMesh); // Pass the player mesh
             player.canThrowHammer = false;
             player.hammerThrowTimer = player.hammerThrowCooldown;
             if (DEBUG_MODE) console.log('Right click attack initiated - player.canThrowHammer:', player.canThrowHammer, 'Attack Move:', player.attackMove);

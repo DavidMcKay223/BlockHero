@@ -2,7 +2,7 @@ import * as THREE from '../../node_modules/three/build/three.module.js';
 import { player } from '../core/player.js';
 import { enemies, spawnEnemy } from '../core/enemy.js';
 import { gameWorldWidth, gameWorldHeight, DEBUG_MODE } from '../core/main.js';
-import { checkCollision } from '../utils/helpers.js';
+import { checkCollision3D } from '../utils/helpers.js';
 import { dpsMeter } from '../core/game.js';
 
 const whipSlashAttack = {
@@ -24,7 +24,7 @@ export function performWhipSlash() {
     const whipHitbox = getWhipHitbox();
     for (let i = enemies.length - 1; i >= 0; i--) {
         const enemy = enemies[i];
-        if (checkCollision(whipHitbox, enemy)) {
+        if (checkCollision3D(whipHitbox, enemy)) {
             const damage = whipSlashAttack.baseDamage + player.STR + player.DEX; // Damage scales with STR and DEX
             enemy.health -= damage;
             dpsMeter.recordDamage(damage);

@@ -1,5 +1,5 @@
-import * as THREE from '../../node_modules/three/build/three.module.js';
-import { OrbitControls } from '../../node_modules/three/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { player } from './player.js';
 import { renderer } from './renderer.js'; // Import the renderer
 
@@ -39,6 +39,14 @@ export function updateCamera() {
         // Required if controls.enableDamping is true
         controls.update();
     }
+
+    // Ensure the camera looks at the player
+    camera.position.set(
+        player.x + 10, // Offset for better view
+        player.y + 10,
+        player.z + 10
+    );
+    camera.lookAt(player.x, player.y, player.z);
 }
 
 export function updateCameraAspect() {

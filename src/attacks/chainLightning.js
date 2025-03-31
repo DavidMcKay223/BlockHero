@@ -153,21 +153,24 @@ export function drawChainLightning(ctx) {
 }
 
 export function updateChainLightningInScene(scene) {
-    // Iterate through active chain lightning beams
     activeChainLightnings.forEach(lightning => {
         if (lightning.currentTargets.length > 0) {
-            const startPoint = new THREE.Vector3(player.x + player.width / 2, player.y + player.height / 2, 0);
+            const startPoint = new THREE.Vector3(player.x + player.width / 2, player.y + player.height / 2, player.z);
 
             for (let i = 0; i < lightning.currentTargets.length; i++) {
                 const target = lightning.currentTargets[i];
-                const endPoint = new THREE.Vector3(target.x + target.width / 2, target.y + target.height / 2, 0);
+                const endPoint = new THREE.Vector3(
+                    target.x + target.width / 2,
+                    target.y + target.height / 2,
+                    target.z
+                );
                 const lightningName = `chainLightning-${lightning.beamIndex}-${i}`;
                 let lightningObject = scene.getObjectByName(lightningName);
 
                 if (!lightningObject) {
                     const points = [startPoint.clone(), endPoint.clone()];
                     const geometry = new THREE.BufferGeometry().setFromPoints(points);
-                    const material = new THREE.LineBasicMaterial({ color: 0xffff00, linewidth: 5 }); // Yellow color
+                    const material = new THREE.LineBasicMaterial({ color: 0xffff00 }); // Yellow color
                     lightningObject = new THREE.Line(geometry, material);
                     lightningObject.name = lightningName;
                     scene.add(lightningObject);
@@ -178,28 +181,6 @@ export function updateChainLightningInScene(scene) {
                 }
                 startPoint.copy(endPoint); // Next segment starts where the previous one ended
             }
-
-            // Clean up previous segments if the lightning has fewer bounces now
-            const sceneLightning = scene.children.filter(obj => obj.name.startsWith(`chainLightning-${lightning.beamIndex}-`));
-            sceneLightning.forEach((segment, index) => {
-                if (index >= lightning.currentTargets.length) {
-                    scene.remove(segment);
-                }
-            });
-        } else {
-            // Clean up if no targets
-            const sceneLightning = scene.children.filter(obj => obj.name.startsWith(`chainLightning-${lightning.beamIndex}-`));
-            sceneLightning.forEach(segment => scene.remove(segment));
-        }
-    });
-
-    // Clean up any beams that are no longer active
-    const sceneLightningBeams = scene.children.filter(obj => obj.name.startsWith('chainLightning-'));
-    const activeBeamIndices = activeChainLightnings.map(lightning => lightning.beamIndex);
-    sceneLightningBeams.forEach(segment => {
-        const beamIndex = parseInt(segment.name.split('-')[1]);
-        if (!activeBeamIndices.includes(beamIndex)) {
-            scene.remove(segment);
         }
     });
 }

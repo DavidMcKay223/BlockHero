@@ -1,4 +1,4 @@
-import * as THREE from '../../node_modules/three/build/three.module.js';
+import * as THREE from 'three';
 
 import { update, draw } from './game.js';
 import { player, handlePlayerInput, updatePlayerCooldowns, initiateAttack } from './player.js';
@@ -17,7 +17,7 @@ import { scene } from './scene.js';
 import { startRendering } from './renderer.js'; // Import startRendering
 import { camera, updateCamera, updateCameraAspect, initControls } from './camera.js'; // Import initControls
 
-export const DEBUG_MODE = false;
+export const DEBUG_MODE = true;
 
 export const gameWorldWidth = 50;
 export const gameWorldHeight = 30;
@@ -72,11 +72,11 @@ function init() {
 }
 
 async function gameLoop() {
-    handlePlayerInput();
+    handlePlayerInput(); // Update player movement
+    updateCamera(); // Update the camera to follow the player
 
-    update();
-
-    updateEnemies();
+    update(); // Update game logic
+    updateEnemies(); // Update enemies' positions
 
     if (player.arcaneExplosionOrbs && player.arcaneExplosionOrbs.length > 0) {
         const arcaneExplosionModule = await import('../talents/arcaneExplosion.js');
@@ -107,9 +107,7 @@ async function gameLoop() {
     updateStatBoost();
     updateKillAllSplitCooldown();
 
-    updateCamera(); // Update the 3D camera position
-    // renderer.render(scene, camera); // Rendering is now handled in renderer.js
-    // requestAnimationFrame(gameLoop); // RequestAnimationFrame is now likely handled in renderer.js
+    requestAnimationFrame(gameLoop); // Ensure the game loop continues
 }
 
 export const righteousFireInstance = new RighteousFire(player);

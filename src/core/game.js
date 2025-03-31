@@ -1,4 +1,4 @@
-import * as THREE from '../../node_modules/three/build/three.module.js';
+import * as THREE from 'three';
 import { handlePlayerInput, player, updatePlayerCooldowns } from './player.js';
 import { updateCamera, camera } from './camera.js';
 import * as hammer from '../attacks/hammer.js';
@@ -62,34 +62,13 @@ const dpsMeter = {
 export function update() {
     handlePlayerInput();
     updatePlayerCooldowns();
-    punch.handlePunchAttack();
-    chainLightning.handleChainLightningAttack();
-    whipSlash.handleWhipSlashAttack();
-    novaAttack.handleNovaAttack(); // Update nova attack projectiles
-    updateCamera();
-    hammer.updateHammers();
+    enemy.updateEnemies();
 
-    // Update the position of your 3D player object in the Three.js scene
-    const playerObject = scene.getObjectByName('player'); // Assuming you named your player object 'player'
-    if (playerObject) {
-        playerObject.position.set(player.x, player.y, player.z); // Adjust z if needed
-        // You might also need to update rotation based on player direction
-    }
-
-    // Update the position of your 3D enemy objects
-    enemy.enemies.forEach(enemyInstance => {
-        const enemyObject = scene.getObjectByName(`enemy-${enemyInstance.id}`); // Assuming you name enemies with an ID
-        if (enemyObject) {
-            enemyObject.position.set(enemyInstance.x, enemyInstance.y, enemyInstance.z || 0); // Adjust z if needed
-        }
-    });
-
-    // Update other 3D elements based on your game state
-    hammer.updateHammersInScene(scene); // Assuming you have this function in hammer.js
-    chainLightning.updateChainLightningInScene(scene); // Assuming you have this in chainLightning.js
-    whipSlash.updateWhipSlashInScene(scene); // Assuming you have this in whipSlash.js
-    novaAttack.updateNovaAttackInScene(scene); // Assuming you have this in novaAttack.js
-    updateArcaneExplosionsInScene(scene); // Assuming you have this function below
+    // Update attacks
+    hammer.updateHammers(scene);
+    chainLightning.updateChainLightningInScene(scene);
+    novaAttack.updateNovaAttackInScene(scene);
+    updateArcaneExplosionsInScene(scene); // Ensure this is called
 }
 
 export function draw(ctx) {
